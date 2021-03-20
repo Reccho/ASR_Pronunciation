@@ -5,6 +5,7 @@ Individual Software Project of Evan Nichols, mentored by Peter Polak
 ### Packages & Tools
 NeMo https://github.com/NVIDIA/NeMo  
 Phonemizer https://github.com/bootphon/phonemizer  
+Librosa https://librosa.org/doc/latest/index.html  
 
 LibriSpeech ASR corpus http://www.openslr.org/12  
   - Download: https://www.openslr.org/resources/12/train-clean-360.tar.gz  
