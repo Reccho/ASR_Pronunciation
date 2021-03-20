@@ -6,6 +6,18 @@ $(document).ready(function () {
 		
 		max_val = 0;
 		//REQUEST: Total number of phrases in xml document
+		$.ajax({ //Get total number of phrases in xml library file
+			type: "POST",
+			data: {
+				action: "numPhrase", 				// Will forward to getPhrase()
+			},
+			url: "http://localhost:5000/Action",
+			
+			success: result => {
+				//max_val = result;
+				console.log(result);
+			},
+		});
 
 		//Check if phrase # is out of bounds and reset accordingly
 
@@ -34,7 +46,6 @@ $(document).ready(function () {
 					$("#stop").attr("disabled", false);			//enable
 					$("#grade").attr("disabled", true);			//disable
 					$("#record").attr("disabled", true);		//disable
-					//$("#nextPhrase").attr("disabled", true);	//disable
 				});
 
 				// On-Click: "Stop"
@@ -42,7 +53,6 @@ $(document).ready(function () {
 					mediaRecorder.stop();	// Stop recording
 
 					//Button updates
-					//$("#nextPhrase").attr("disabled", false);	//enable
 					$("#record").attr("disabled", false);		//enable
 					$("#grade").attr("disabled", false);		//enable
 					$("#stop").attr("disabled", true);			//disable
