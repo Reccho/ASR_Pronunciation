@@ -20,6 +20,11 @@ $(document).ready(function () {
 		});
 
 		//Check if phrase # is out of bounds and reset accordingly
+		if ($('#phraseNumber').val() > max_val) {
+			$('#phrase').empty().append(1);
+		} else if ($('#phraseNumber').val() < 1) {
+			$('#phrase').empty().append(max_val);
+		}
 
 		//REQUEST: Fetch phrase text form xml, search by 'id'
 		$.ajax({ // Post-Request: Get Phrase from xml file by id and display text string 
