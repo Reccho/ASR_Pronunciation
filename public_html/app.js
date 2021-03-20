@@ -22,6 +22,20 @@ $(document).ready(function () {
 		//Check if phrase # is out of bounds and reset accordingly
 
 		//REQUEST: Fetch phrase text form xml, search by 'id'
+		$.ajax({ // Post-Request: Get Phrase from xml file by id and display text string 
+			type: "POST",
+			data: {
+				action: "getPhrase", 				// Will forward to getPhrase()
+				idDataset: $('#dataset').val(), 	// Pass value of "Dataset"
+				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
+			},
+			url: "http://localhost:5000/Action",
+			
+			success: result => {
+				//$('#phrase').empty().append(result); // Display new phrase to user
+				console.log(result);
+			},
+		});
 	}
 	
 	$(document).on("input", "#phraseNumber", selectPhrase);
