@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    </head>
+        
+    <body>
+        <div class="container">
+
+            <div class="py-5 text-center">
+                <h2>Pronunciation Checker</h2>
+            </div>
+        
+            <form>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label for="dataset">Dataset</label>
+                        <select class="form-control" id="dataset"></select>
+                    </div>
+                    <div class="form-group col">
+                        <label for="phraseNumber">Phrase number</label>
+                        <input type="number" class="form-control" id="phraseNumber" value="1">
+                        </div>
+                </div>
+                    
+                <div class="form-group">
+                    <label for="phraseField">Phrase</label>
+                    <fieldset id="phraseField">
+                        <div class="alert alert-dark" role="alert" id="phrase"></div>
+                    </fieldset>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label for="recordingGrp">Recording</label>
+                        <fieldset id="recordingGrp">
+                            <div class="btn-group d-flex">
+                                <button type="button" class="btn btn-primary" id="record">Record</button>
+                                <button type="button" class="btn btn-secondary" id="stop" disabled>Stop</button>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="form-group col">
+                        <label for="playbackField">Playback</label>
+                        <fieldset id="playbackField" class="">
+                            <audio id="playback" controls style="width: 100%"></audio>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <fieldset id="recordingGrp">
+                            <div class="btn-group d-flex">
+                                <button type="button" class="btn btn-secondary" id="grade" disabled>Grade</button>
+                                <!--button type="button" class="btn btn-secondary" id="nextPhrase" disabled>Next Phrase</button-->
+                                <div class="alert alert-dark" role="alert" id="score" controls style="width: 50%; height: 200%"></div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    
+                </div>
+            </form>
+
+            <section class="main-controls">
+                <canvas class="visualizer" height="60px"></canvas>
+                <div id="buttons"></div>
+            </section>
+        </div>
+
+        
+            
+    </body>
+</html>
