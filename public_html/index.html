@@ -6,6 +6,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+            <title>Pronunciation Checker</title>
     </head>
         
     <body>
@@ -55,12 +59,15 @@
                         <fieldset id="recordingGrp">
                             <div class="btn-group d-flex">
                                 <button type="button" class="btn btn-secondary" id="grade" disabled>Grade</button>
-                                <!--button type="button" class="btn btn-secondary" id="nextPhrase" disabled>Next Phrase</button-->
                                 <div class="alert alert-dark" role="alert" id="score" controls style="width: 50%; height: 200%"></div>
                             </div>
                         </fieldset>
                     </div>
-                    
+                    <img class="fit-picture"
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Sine_waves_different_frequencies.svg/2250px-Sine_waves_different_frequencies.svg.png?crop"
+                        alt="Spectrogram Image"
+                        width=550
+                        height=200>
                 </div>
             </form>
 
@@ -70,7 +77,20 @@
             </section>
         </div>
 
-        
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+            
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+
+        <!-- script src="scripts/app.js"></script -->
+        <script src="app.js"></script>
             
     </body>
 </html>
