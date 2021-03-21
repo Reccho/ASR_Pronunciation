@@ -17,6 +17,19 @@ def phrase_Num():
     root = tree.getroot()
     return len(root.findall('.//phrase'))
 
+#Phonemize "phrase" to get phonetic representation
+def phonemize(phrase):
+    cmd = "echo " + string + " | phonemize"
+    sub = subprocess.Popen(cmd, 
+        shell=True, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        universal_newlines=True)
+    key = sub.communicate()[0]
+    return key
+
+
+
 # create the Flask app
 app = Flask(__name__)
 CORS(app)
