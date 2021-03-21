@@ -14,7 +14,7 @@ $(document).ready(function () {
 			url: "http://localhost:5000/Action",
 			
 			success: result => {
-				//max_val = result;
+				max_val = result;
 				console.log(result);
 			},
 		});
@@ -37,7 +37,7 @@ $(document).ready(function () {
 			url: "http://localhost:5000/Action",
 			
 			success: result => {
-				//$('#phrase').empty().append(result); // Display new phrase to user
+				$('#phrase').empty().append(result); // Display new phrase to user
 				console.log(result);
 			},
 		});
