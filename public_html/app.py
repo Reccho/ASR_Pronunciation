@@ -19,7 +19,7 @@ def phrase_Num():
 
 #Phonemize "phrase" to get phonetic representation
 def phonemize(phrase):
-    cmd = "echo " + string + " | phonemize"
+    cmd = "echo " + phrase + " | phonemize"
     sub = subprocess.Popen(cmd, 
         shell=True, 
         stdout=subprocess.PIPE, 
