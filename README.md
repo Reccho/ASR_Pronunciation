@@ -1,5 +1,6 @@
 # ASR_Pronunciation
 Individual Software Project of Evan Nichols, mentored by Peter Polak  
+https://aic.ufal.mff.cuni.cz/~nichols/
 
 ##
 ### Packages & Tools
