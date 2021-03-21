@@ -22,7 +22,7 @@ The goal of making automatic speech recognition technologies "noise robust" is t
 - *Missing data approach:* Assumes some spectral-temporal regions will remain uncorrupted when speech is one of several sound sources. These regions can be used as ‘reliable evidence’ for recognition. <sup>6</sup>
 
 
-
+##  
 ### Sources
 [1] https://tinyurl.com/Verbit-AI  
 [2] https://sail.usc.edu/publications/files/ROBFRONT_MVS.pdf  
