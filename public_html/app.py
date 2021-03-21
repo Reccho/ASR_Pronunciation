@@ -28,6 +28,17 @@ def phonemize(phrase):
     key = sub.communicate()[0]
     return key
 
+#Run 'soxi -D' on file "filename"
+def sox_i(filename):
+    cmd = "soxi -D " + filename
+    sub = subprocess.Popen(cmd, 
+        shell=True, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        universal_newlines=True)
+    sox = sub.communicate()[0]
+    return(sox)
+
 
 
 # create the Flask app
