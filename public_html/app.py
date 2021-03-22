@@ -7,6 +7,9 @@ import os, os.path, subprocess, time, torch
 #from nemo.collections.asr.models import EncDecCTCModel
 #from nemo.utils import logging
 
+xmlpath = "/lnet/aic/personal/nichols/libraries/phrases.xml"
+audiopath = "/lnet/aic/personal/nichols/audio/"
+
 #Search xml file for phrase by id and return text string
 def phrase_Get(itemNum):
     #print("getting phrase: " + itemNum) #TEST
@@ -140,15 +143,15 @@ CORS(app)
 def query():
     if request.form['action'] == "grade": # get audio --> return grade
         phrase = request.form['idPhrase']
-        audiodir = "/lnet/aic/personal/nichols/audio/"
         filename = "audio.wav"
-	# Handle audio --> audio.wav in folder "audio"
+        # Handle audio from app.js --> create '/audio/audio.wav'
         #
         #
         #
         # prep_Dataset() arguments --> Create file 'dataset.json'
+	#Get duration of audio sample
         duration = 8
-	#key = phonemize(phrase)  # phonemize phrase to get pronunciation key
+        #key = phonemize(phrase)  # phonemize phrase to get pronunciation key
 
         prep_Dataset((audiodir + filename), duration, phrase)
         score = Grade(audiodir + "dataset.json")
