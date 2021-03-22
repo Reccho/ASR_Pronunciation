@@ -51,6 +51,16 @@ def pwd_P(filename):
     sox = sub.communicate()[0]
     return(sox.decode().replace('\n', '') + "/" + filename)
 
+def prep_Dataset(filename, duration, text):
+	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
+	cmd = "echo " + contents + " >/lnet/aic/personal/nichols/audio/dataset.json"
+	subprocess.Popen(cmd, 
+        shell=True, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        universal_newlines=True)
+	return
+
 #Run the ASR on 'dataset.json', return score
 def Grade(dataset):
     '''
@@ -65,7 +75,8 @@ def Grade(dataset):
     parser.add_argument(
         "--normalize_text", default=True, type=bool, help="Normalize transcripts or not. Set to False for non-English."
     )
-    args = parser.parse_args(["--dataset", "dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
+    #args = parser.parse_args(["--dataset", "dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
+    args = parser.parse_args(["--dataset", "/lnet/aic/personal/nichols/audio/dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
     #torch.set_grad_enabled(False)
 
     if args.asr_model.endswith('.nemo'):
@@ -124,6 +135,18 @@ CORS(app)
 @app.route('/Action', methods=['POST']) #ajax uses GET by def.
 def query():
     if request.form['action'] == "grade": # get audio --> return grade
+        # Handle audio --> audio.wav in folder "audio"
+        #
+        #
+        #
+        # prep_Dataset() arguments --> Create file 'dataset.json'
+        phrase = request.form['idPhrase']
+        audiodir = "/lnet/aic/personal/nichols/audio/"
+        filename = "audio.wav"
+        duration = 8
+
+        prep_Dataset((audiodir + filename), duration, phrase)
+        Grade(audiodir + "dataset.json")
         return 1
     elif request.form['action'] == "numPhrase": # get phrase number --> return string
         number = phrase_Num()
