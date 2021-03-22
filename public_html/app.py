@@ -150,8 +150,9 @@ def query():
         duration = 8
 
         prep_Dataset((audiodir + filename), duration, phrase)
-        Grade(audiodir + "dataset.json")
-        return 1
+        score = Grade(audiodir + "dataset.json")
+        return score
+	#return 1
     elif request.form['action'] == "numPhrase": # get phrase number --> return string
         number = phrase_Num()
         return number
