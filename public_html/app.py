@@ -81,7 +81,6 @@ def prep_Dataset(filename, duration, text):
 
 #Run the ASR on 'dataset.json', return score
 def Grade(dataset):
-    '''
     #Running the ASR
     parser = ArgumentParser()
     parser.add_argument(
@@ -94,7 +93,7 @@ def Grade(dataset):
         "--normalize_text", default=True, type=bool, help="Normalize transcripts or not. Set to False for non-English."
     )
     #args = parser.parse_args(["--dataset", "dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
-    args = parser.parse_args(["--dataset", "/lnet/aic/personal/nichols/audio/dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
+    args = parser.parse_args(["--dataset", dataset, "--asr_model", "QuartzNet15x5Base-En"])
     #torch.set_grad_enabled(False)
 
     if args.asr_model.endswith('.nemo'):
@@ -140,9 +139,6 @@ def Grade(dataset):
 
     score = (round((wer_value / args.wer_tolerance), 4) * 100)
     return score
-    '''
-    return 8
-
 
 
 
