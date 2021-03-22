@@ -47,3 +47,4 @@ Training ASR systems on text-to-speech (TTS) outputs is limited by a lack of aco
 [8] http://www.interspeech2020.org/uploadfile/pdf/Mon-2-2-4.pdf  
 [9] https://deepai.org/publication/robust-speech-recognition-using-generative-adversarial-networks  
 [10] https://arxiv.org/abs/1803.10132  
+[11] https://towardsdatascience.com/understanding-generative-adversarial-networks-gans-cd6e4651a29  
