@@ -1,7 +1,7 @@
 from flask import Flask, request    #Flask for post requests
 #from flask_cors import CORS         #bypassing CORS locally
 import xml.etree.ElementTree as ET     #XML tree toolkit
-import os, os.path, subprocess, time, torch
+import os, os.path, subprocess, time, torch, wave, contextlib
 #from argparse import ArgumentParser
 #from nemo.collections.asr.metrics.wer import WER, word_error_rate
 #from nemo.collections.asr.models import EncDecCTCModel
@@ -58,6 +58,16 @@ def pwd_P(filename):
     sox = sub.communicate()[0]
     return(sox.decode().replace('\n', '') + "/" + filename)
 
+#Return duration of audio file 'filename'
+def audio_Duration(filename):
+    with contextlib.closing(wave.open(filename,'r')) as f:
+        frames = f.getnframes()
+        rate = f.getframerate()
+        duration = frames / float(rate)
+        #print(duration)
+    return duration
+
+#Prepare the dataset to be fed to ASR
 def prep_Dataset(filename, duration, text):
 	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
 	cmd = "echo " + contents + " >" + audiopath + "dataset.json"
