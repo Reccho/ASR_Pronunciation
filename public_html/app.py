@@ -1,7 +1,11 @@
 from flask import Flask, request    #Flask for post requests
-from flask_cors import CORS         #bypassing CORS locally
+#from flask_cors import CORS         #bypassing CORS locally
 import xml.etree.ElementTree as ET     #XML tree toolkit
-import os, os.path, subprocess, time     
+import os, os.path, subprocess, time, torch
+#from argparse import ArgumentParser
+#from nemo.collections.asr.metrics.wer import WER, word_error_rate
+#from nemo.collections.asr.models import EncDecCTCModel
+#from nemo.utils import logging
 
 #Search xml file for phrase by id and return text string
 def phrase_Get(itemNum):
