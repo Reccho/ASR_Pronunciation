@@ -9,6 +9,7 @@ import os, os.path, subprocess, time, torch, wave, contextlib
 
 xmlpath = "/lnet/aic/personal/nichols/libraries/phrases.xml"
 audiopath = "/lnet/aic/personal/nichols/audio/"
+#Audio formatting: ffmpeg -i input_file.mp3 -ar 16000 -ac 1 output.wav
 
 #Search xml file for phrase by id and return text string
 def phrase_Get(itemNum):
