@@ -82,7 +82,7 @@ $(document).ready(function () {
 
 					score = 0;
 					var formData = new FormData();
-					formData.append('audio', blob, 'input.wav');
+					formData.append('audio', blob, 'audio.wav');
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
 						type: "POST",
 						data: {
