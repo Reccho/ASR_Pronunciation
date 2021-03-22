@@ -60,7 +60,7 @@ def pwd_P(filename):
 
 def prep_Dataset(filename, duration, text):
 	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
-	cmd = "echo " + contents + " >/lnet/aic/personal/nichols/audio/dataset.json"
+	cmd = "echo " + contents + " >" + audiopath + "dataset.json"
 	subprocess.Popen(cmd, 
         shell=True, 
         stdout=subprocess.PIPE, 
