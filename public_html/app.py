@@ -139,15 +139,16 @@ CORS(app)
 @app.route('/Action', methods=['POST']) #ajax uses GET by def.
 def query():
     if request.form['action'] == "grade": # get audio --> return grade
-        # Handle audio --> audio.wav in folder "audio"
+        phrase = request.form['idPhrase']
+        audiodir = "/lnet/aic/personal/nichols/audio/"
+        filename = "audio.wav"
+	# Handle audio --> audio.wav in folder "audio"
         #
         #
         #
         # prep_Dataset() arguments --> Create file 'dataset.json'
-        phrase = request.form['idPhrase']
-        audiodir = "/lnet/aic/personal/nichols/audio/"
-        filename = "audio.wav"
         duration = 8
+	#key = phonemize(phrase)  # phonemize phrase to get pronunciation key
 
         prep_Dataset((audiodir + filename), duration, phrase)
         score = Grade(audiodir + "dataset.json")
