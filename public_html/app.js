@@ -79,8 +79,27 @@ $(document).ready(function () {
 
 				// On-Click: "Grade"
 				$("#grade").click(function() {
+
 					score = 0;
-					//REQUEST: Pass audio to grading function and get score value (decimal)
+					var formData = new FormData();
+					formData.append('audio', blob, 'input.wav');
+					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
+						type: "POST",
+						data: {
+							action: "grade", 					// Will forward to Grade()
+							audio: formData,
+							idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
+						},
+						processData: false,  					// prevent jQuery from converting the data
+    					contentType: false,  					// prevent jQuery from overriding content type
+						url: "http://localhost:5000/Action",
+						
+						success: result => {
+							$('#score').empty().append(result);
+							$('#score').append("%");
+							console.log(result);
+						},
+					});
 				});
 
 				mediaRecorder.onstop = function (e) {
