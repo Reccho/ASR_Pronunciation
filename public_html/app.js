@@ -82,7 +82,7 @@ $(document).ready(function () {
 
 					score = 0;
 					var formData = new FormData();
-					formData.append('audio', blob, 'audio.wav');
+					formData.append('audio', blob, 'input.wav');
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
 						type: "POST",
 						data: {
@@ -104,7 +104,7 @@ $(document).ready(function () {
 
 				mediaRecorder.onstop = function (e) {
 					clipName = $("#dataset").val() + "_" + $("#phraseNumber").val();
-					blob = new Blob(chunks, { 'type': 'audio/ogg; codecs=opus' });
+					blob = new Blob(chunks, { 'type': 'audio/wav; codecs=opus' });
 					chunks = [];
 					var audioURL = URL.createObjectURL(blob);
 					$("#preview").attr("src", audioURL);
