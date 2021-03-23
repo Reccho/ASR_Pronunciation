@@ -163,18 +163,22 @@ def query():
         phrase = request.form['idPhrase']
         filename = "audio.wav"
         # Handle audio from app.js --> create '/audio/audio.wav'
+        form = cgi.FieldStorage()
+        #inputF = request.form["audio"].filename
+        inputF = request.form["audio"]     #Input audio file (sent as 'input.wav')
+        with open((audiopath + inputF), 'wb') as f:
+            f.write(inputF)
         #
-        #
+        audio_Format((audiopath + "input.wav"), (audiopath + "audio.wav"))  #Format rate & ac of audio
         #
         # prep_Dataset() arguments --> Create file 'dataset.json'
-	#Get duration of audio sample
-        duration = 8
+        duration = audio_Duration(audiopath + filename)
         #key = phonemize(phrase)  # phonemize phrase to get pronunciation key
 
-        prep_Dataset((audiodir + filename), duration, phrase)
-        score = Grade(audiodir + "dataset.json")
+        prep_Dataset((audiopath + filename), duration, phrase)
+        score = Grade(audiopath + "dataset.json")
         return score
-	#return 1
+        #return 1
     elif request.form['action'] == "numPhrase": # get phrase number --> return string
         number = phrase_Num()
         return number
