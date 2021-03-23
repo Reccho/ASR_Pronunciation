@@ -68,6 +68,17 @@ def audio_Duration(filename):
         #print(duration)
     return duration
 
+#Run 'ffmpeg -i "input_file.mp3" -ar 16000 -ac 1 "output.wav"' on file
+def audio_Format(input, output):
+    cmd = "ffmpeg -i " + input + " -ar 16000 -ac 1 " + output
+    subprocess.Popen(cmd, 
+        shell=True, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        #universal_newlines=True
+        )
+    return
+
 #Prepare the dataset to be fed to ASR
 def prep_Dataset(filename, duration, text):
 	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
