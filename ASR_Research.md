@@ -27,7 +27,7 @@ Often, signal processing requires domain expertise and/or simplifying assumption
 
 ##  
 ### Generative Adversarial Networks (GANs)
-GANs are a class of neural network used for *unsupervised learning.* Basically, two neural networks are implemented: a **generator** and a **discriminator**. The generator creates samples of a type of data (images, audio, etc.). The discriminator distinguishes between the generated "fake" samples and real samples. Through this adversarial system the generator learns to make better samples and the discriminator becomes better at discerning fake vs real samples. The generator is trained in order to maximise the probability of the discriminator making a mistake and the discriminator is based on a model that estimates the probability that the sample that it got is received from the training data and not from the generator. 
+GANs are a class of neural network used for *unsupervised learning.* Basically, two neural networks are implemented: a **generator** and a **discriminator**. The generator creates samples of a type of data (images, audio, etc.). The discriminator distinguishes between the generated "fake" samples and real samples. Through this adversarial system the generator learns to make better samples and the discriminator becomes better at discerning fake vs real samples. The generator is trained in order to maximise the probability of the discriminator making a mistake and the discriminator estimates the probability that the sample is from training data and not the generator.
 ![GAN General Workflow](/images/gfg_gans-workflow.jpg)
 
 #### GANs applied to Noise Reduction
