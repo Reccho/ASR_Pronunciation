@@ -188,7 +188,13 @@ def query():
         phrase = phrase_Get(id)
         return phrase
         #return 3
+    elif request.form['action'] == "selDataset": # get dataset name --> return dataset title, open xml tree
+        # return .xml filenames in "/lnet/aic/personal/nichols/libraries/"
+        pass
     elif request.form['action'] == "getDataset": # get dataset name --> return dataset title, open xml tree
+        # receive filename
+        # foldername is "/lnet/aic/personal/nichols/libraries/"
+        # load tree from this location
         pass
     return ":)"
 
