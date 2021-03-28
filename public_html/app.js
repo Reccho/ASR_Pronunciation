@@ -107,10 +107,10 @@ $(document).ready(function () {
 					blob = new Blob(chunks, { 'type': 'audio/wav; codecs=opus' });
 					chunks = [];
 					var audioURL = URL.createObjectURL(blob);
-					$("#preview").attr("src", audioURL);
+					$("#playback").attr("src", audioURL);
 
 					if ($("#autoplay").is(":checked"))
-						$("#preview").trigger("play");
+						$("#playback").trigger("play");
 				}
 
 				mediaRecorder.ondataavailable = function (e) {
