@@ -1,5 +1,9 @@
+reqRUL_Library = "http://localhost:5000/Library";    //Local
+reqRUL_Grade = "http://localhost:5000/Grade";    //Local
+//reqURL = "Action", "Grade";    //Cluster
+
 $(document).ready(function () {
-	$('#phraseNumber').val(0);                      // begin number field at 0
+    $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default prompt
     max_val = 1;                                    // default value
     req_getDatasets();
@@ -13,7 +17,7 @@ $(document).ready(function () {
 				idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
 			},
-            url: reqURL,
+            url: reqRUL_Library,
 			
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
@@ -29,7 +33,7 @@ $(document).ready(function () {
 				action: "numPhrase", 				// Will forward to getPhrase()
                 idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 			},
-            url: reqURL,
+            url: reqRUL_Library,
 			
 			success: function(data) {
                 max_val = parseInt(data);
@@ -44,10 +48,10 @@ $(document).ready(function () {
 			data: {
 				action: "getDatasets", 				// Will forward to getPhrase()
 			},
-            url: reqURL,
+            url: reqRUL_Library,
 			
 			success: function(data) {
-                var files = data.split(' '); // split string on comma space
+                var files = data.split(' '); // split string on space
 
                 files.forEach((element, index) => {
                     let option = document.createElement('option');
