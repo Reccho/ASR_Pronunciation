@@ -1,7 +1,7 @@
-from flask import Flask, request      #Flask for post requests
-#from flask_cors import CORS #bypassing CORS locally
+from flask import Flask, render_template, request
+from flask_cors import CORS, cross_origin #bypassing CORS locally
 import xml.etree.ElementTree as ET     #XML tree toolkit
-import os, os.path, subprocess, time, torch, wave, contextlib
+import os, os.path, subprocess, time, wave, contextlib
 from argparse import ArgumentParser
 from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
