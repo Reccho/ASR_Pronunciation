@@ -1,5 +1,31 @@
 $(document).ready(function () {
-//methods
+	$('#phraseNumber').val(0);                      // begin number field at 0
+	$('#phrase').empty().append("Hello, World.");   // default prompt
+	max_val = 1;                                    // default value
+	Populate();
+
+	function Populate() {
+	$.ajax({ //Get total number of phrases in xml library file
+			type: "POST",
+			data: {
+				action: "getDatasets", 				// Will forward to getPhrase()
+			},
+			url: "http://localhost:5000/Action",
+
+			success: function(data) {
+		var files = data.split(' '); // split string on comma space
+
+		files.forEach((element, index) => {
+		    let option = document.createElement('option');
+		    option.value = index;          // Add index to option
+		    option.textContent = element;  // Add element HTML
+		    $('#dataset').append(option);  // Append option to Dataset (select)
+		  });
+
+		console.log(files);
+			},
+		});
+	}//populate
 	
 	function selectPhrase() {
 		$('phrase').val('');
