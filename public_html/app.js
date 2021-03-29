@@ -85,81 +85,80 @@ $(document).ready(function () {
         console.log("New phrase library selected.");    //TEST
     });
 
-	//main
-	if (navigator.mediaDevices) {
-		var audio = { audio: true };
-		var chunks = [];
-		var blob = null;
-		var clipName = "";
+	//"main"
+    if (navigator.mediaDevices) {
+        var audio = { audio: true };
+        var chunks = [];
+        var audioBlob = null;
+        var clipName = "";
 
-		navigator.mediaDevices.getUserMedia(audio).then(function (stream) {
-				var mediaRecorder = new MediaRecorder(stream);	// Init
+        navigator.mediaDevices.getUserMedia(audio).then(function (stream) {
+                var mediaRecorder = new MediaRecorder(stream);	// Init
 
-				// On-Click: "Record"
-				$("#record").click(function () {
-					$("#playback").trigger("stop");	// Stop playing preview
-					chunks = [];					// Set chunks empty
-					mediaRecorder.start();			// Start recording
+                // On-Click: "Record"
+                $("#record").click(function () {
+                    $("#playback").trigger("stop");	// Stop playing preview
+                    chunks = [];					// Set chunks empty
+                    mediaRecorder.start();			// Start recording
 
-					//Button updates
-					$("#stop").attr("disabled", false);			//enable
-					$("#grade").attr("disabled", true);			//disable
-					$("#record").attr("disabled", true);		//disable
-				});
+                    //Button updates
+                    $("#stop").attr("disabled", false);			//enable
+                    $("#grade").attr("disabled", true);			//disable
+                    $("#record").attr("disabled", true);		//disable
+                });
 
-				// On-Click: "Stop"
-				$("#stop").click(function () {
-					mediaRecorder.stop();	// Stop recording
+                // On-Click: "Stop"
+                $("#stop").click(function () {
+                    mediaRecorder.stop();	// Stop recording
 
-					//Button updates
-					$("#record").attr("disabled", false);		//enable
-					$("#grade").attr("disabled", false);		//enable
-					$("#stop").attr("disabled", true);			//disable
-				});
+                    //Button updates
+                    $("#record").attr("disabled", false);		//enable
+                    $("#grade").attr("disabled", false);		//enable
+                    $("#stop").attr("disabled", true);			//disable
+                });
 
-				// On-Click: "Grade"
+                // On-Click: "Grade"
 				$("#grade").click(function() {
+					//var form = new FormData();
+					//form.append('audio', audioBlob);
 
-					score = 0;
-					var formData = new FormData();
-					formData.append('audio', blob, 'input.wav');
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
-						type: "POST",
-						data: {
-							action: "grade", 					// Will forward to Grade()
-							audio: formData,
-							idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
-						},
-						processData: false,  					// prevent jQuery from converting the data
-    					contentType: false,  					// prevent jQuery from overriding content type
-						url: "http://localhost:5000/Action",
+						url: reqRUL_Grade,
+                        type: "POST",
+                        contentType: false,
+                        processData: false,
+                        //dataType: 'audiodata',
+                        data: audioBlob,
 						
-						success: result => {
-							$('#score').empty().append(result);
+						success: function(data) {
+							$('#score').empty().append(data);
 							$('#score').append("%");
-							console.log(result);
-						},
+							console.log(data);     //TEST
+                            //console.log(audioBlob.chunks);
+						}
 					});
 				});
 
-				mediaRecorder.onstop = function (e) {
-					clipName = $("#dataset").val() + "_" + $("#phraseNumber").val();
-					blob = new Blob(chunks, { 'type': 'audio/wav; codecs=opus' });
-					chunks = [];
-					var audioURL = URL.createObjectURL(blob);
-					$("#playback").attr("src", audioURL);
 
-					if ($("#autoplay").is(":checked"))
-						$("#playback").trigger("play");
-				}
+                mediaRecorder.onstop = function (e) {
+                    clipName = $("#dataset").val() + "_" + $("#phraseNumber").val();
+                    audioBlob = new Blob(chunks, { 'type': 'audio/webm; codecs=opus' });
+                    chunks = [];
+                    var audioURL = URL.createObjectURL(audioBlob);
+                    $("#playback").attr("src", audioURL);
 
-				mediaRecorder.ondataavailable = function (e) {
-					chunks.push(e.data);
-				}
+                    if ($("#autoplay").is(":checked"))
+                        $("#playback").trigger("play");
+                }
 
-			})
-			.catch(function (err) {
-				alert('Error encountered: ' + err);
-			})
-	}
+                mediaRecorder.ondataavailable = function (e) {
+                    chunks.push(e.data);
+                    console.log(e.data);
+                }
+
+            })
+            .catch(function (err) {
+                alert('Error encountered: ' + err);
+            })
+    }
 });
