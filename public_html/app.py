@@ -184,22 +184,17 @@ def query():
         return score
         #return 1
     elif request.form['action'] == "numPhrase": # get phrase number --> return string
-        number = phrase_Num()
-        return number
-        #return 2
+        idD = request.form['idDataset']
+        return str(phrase_Num(idD))
     elif request.form['action'] == "getPhrase": # get phrase number --> return string
-        id = request.form['idPhrase']
-        phrase = phrase_Get(id)
+        idP = request.form['idPhrase']
+        idD = request.form['idDataset']
+        phrase = phrase_Get(idD, idP)
         return phrase
-        #return 3
-    elif request.form['action'] == "selDataset": # get dataset name --> return dataset title, open xml tree
-        # return .xml filenames in "/lnet/aic/personal/nichols/libraries/"
-        pass
-    elif request.form['action'] == "getDataset": # get dataset name --> return dataset title, open xml tree
-        # receive filename
-        # foldername is "/lnet/aic/personal/nichols/libraries/"
-        # load tree from this location
-        pass
+    elif request.form['action'] == "getDatasets": # get dataset name --> return dataset title, open xml tree
+        files = getDatasets(LibPath_Local, "xml")
+        filesStr = " "
+        return (filesStr.join(files)) 
     return ":)"
 
 if __name__ == '__main__':
