@@ -7,21 +7,21 @@ from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
 from nemo.utils import logging
 
-xmlpath = "/lnet/aic/personal/nichols/libraries/phrases.xml"
-audiopath = "/lnet/aic/personal/nichols/audio/"
-#Audio formatting: ffmpeg -i input_file.mp3 -ar 16000 -ac 1 output.wav
+LibPath = "C:/Users/Reccho/Documents/Launch/ISP/libraries/"
+# Local path: "C:/Users/Reccho/Documents/Launch/ISP/libraries/"
+# Cluster path: ""
 
 #Search xml file for phrase by id and return text string
 def phrase_Get(filename, itemNum):
-    tree = ET.parse(LibPath_Local + filename)   # Create tree from xml file
-    print(LibPath_Local + filename)
+    tree = ET.parse(LibPath + filename)   # Create tree from xml file
+    print(LibPath + filename)
     root = tree.getroot()                                                           # Start at root
     text = root.find('.//phrase[@id="{value}"]'.format(value=itemNum)).text         # Search for matching id, pull text
     return text
 
 #Return total number of phrases in xml file
 def phrase_Num(filename):
-    tree = ET.parse(LibPath_Local + filename)   # Create tree from xml file
+    tree = ET.parse(LibPath + filename)   # Create tree from xml file
     root = tree.getroot()
     return len(root.findall('.//phrase'))
 
