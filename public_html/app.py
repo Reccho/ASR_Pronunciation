@@ -12,18 +12,22 @@ audiopath = "/lnet/aic/personal/nichols/audio/"
 #Audio formatting: ffmpeg -i input_file.mp3 -ar 16000 -ac 1 output.wav
 
 #Search xml file for phrase by id and return text string
-def phrase_Get(itemNum):
-    #print("getting phrase: " + itemNum) #TEST
-    tree = ET.parse(xmlpath)   # Create tree from xml file
+def phrase_Get(filename, itemNum):
+    tree = ET.parse(LibPath_Local + filename)   # Create tree from xml file
+    print(LibPath_Local + filename)
     root = tree.getroot()                                                           # Start at root
     text = root.find('.//phrase[@id="{value}"]'.format(value=itemNum)).text         # Search for matching id, pull text
     return text
 
 #Return total number of phrases in xml file
-def phrase_Num():
-    tree = ET.parse(xmlpath)   # Create tree from xml file
+def phrase_Num(filename):
+    tree = ET.parse(LibPath_Local + filename)   # Create tree from xml file
     root = tree.getroot()
     return len(root.findall('.//phrase'))
+
+#Return .xml files in library directory
+def getDatasets(path, ext):
+    return (f for f in os.listdir(path) if f.endswith('.' + ext))
 
 #Phonemize "phrase" to get phonetic representation
 def phonemize(phrase):
