@@ -161,42 +161,34 @@ def Grade(dataset):
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/Action', methods=['POST']) #ajax uses GET by def.
-def query():
-    if request.form['action'] == "grade": # get audio --> return grade
-        phrase = request.form['idPhrase']
-        filename = "audio.wav"
-        # Handle audio from app.js --> create '/audio/audio.wav'
-        form = cgi.FieldStorage()
-        #inputF = request.form["audio"].filename
-        inputF = request.form["audio"]     #Input audio file (sent as 'input.wav')
-        with open((audiopath + inputF), 'wb') as f:
-            f.write(inputF)
-        #
-        audio_Format((audiopath + "input.wav"), (audiopath + "audio.wav"))  #Format rate & ac of audio
-        #
-        # prep_Dataset() arguments --> Create file 'dataset.json'
-        duration = audio_Duration(audiopath + filename)
-        #key = phonemize(phrase)  # phonemize phrase to get pronunciation key
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-        prep_Dataset((audiopath + filename), duration, phrase)
-        score = Grade(audiopath + "dataset.json")
-        return score
-        #return 1
-    elif request.form['action'] == "numPhrase": # get phrase number --> return string
+@app.route('/Grade', methods=['POST']) #ajax uses GET by def.
+def grade():    # get audio --> return grade
+    f = open('./sample.wav', 'wb')
+    f.write(request.data)
+    f.close()
+    return "File written."
+
+@app.route('/Library', methods=['POST']) #ajax uses GET by def.
+def query():
+    action = request.form.get('action', '')     # default '' if no "action" data
+
+    if action == "numPhrase":         # get phrase number --> return string
         idD = request.form['idDataset']
         return str(phrase_Num(idD))
-    elif request.form['action'] == "getPhrase": # get phrase number --> return string
+    elif action == "getPhrase":         # get phrase number --> return string
         idP = request.form['idPhrase']
         idD = request.form['idDataset']
         phrase = phrase_Get(idD, idP)
         return phrase
-    elif request.form['action'] == "getDatasets": # get dataset name --> return dataset title, open xml tree
-        files = getDatasets(LibPath_Local, "xml")
+    elif action == "getDatasets":       # get dataset name --> return dataset title, open xml tree
+        files = getDatasets(LibPath, "xml")
         filesStr = " "
-        return (filesStr.join(files)) 
+        return (filesStr.join(files))
     return ":)"
 
 if __name__ == '__main__':
-    # run app in debug mode on port 5000
-    app.run(debug=True, port=5000)
+    app.run(debug=True)
