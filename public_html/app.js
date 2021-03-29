@@ -1,75 +1,89 @@
 $(document).ready(function () {
 	$('#phraseNumber').val(0);                      // begin number field at 0
-	$('#phrase').empty().append("Hello, World.");   // default prompt
-	max_val = 1;                                    // default value
-	Populate();
+    $('#phrase').empty().append("Hello, World.");   // default prompt
+    max_val = 1;                                    // default value
+    req_getDatasets();
 
-	function Populate() {
-	$.ajax({ //Get total number of phrases in xml library file
+    //Request Functions
+    function req_getPhrase() {
+        $.ajax({ // Post-Request: Get Phrase from xml file by id and display text string 
 			type: "POST",
 			data: {
-				action: "getDatasets", 				// Will forward to getPhrase()
+				action: "getPhrase", 				// Will forward to getPhrase()
+				idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
+				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
 			},
-			url: "http://localhost:5000/Action",
-
+            url: reqURL,
+			
 			success: function(data) {
-		var files = data.split(' '); // split string on comma space
-
-		files.forEach((element, index) => {
-		    let option = document.createElement('option');
-		    option.value = index;          // Add index to option
-		    option.textContent = element;  // Add element HTML
-		    $('#dataset').append(option);  // Append option to Dataset (select)
-		  });
-
-		console.log(files);
+				$('#phrase').empty().append(data); // Display new phrase to user
+				//console.log(data);
 			},
 		});
-	}//populate
-	
-	function selectPhrase() {
-		$('phrase').val('');
-		
-		max_val = 0;
-		//REQUEST: Total number of phrases in xml document
+    }
+
+    function req_numPhrase() {
 		$.ajax({ //Get total number of phrases in xml library file
 			type: "POST",
 			data: {
 				action: "numPhrase", 				// Will forward to getPhrase()
+                idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 			},
-			url: "http://localhost:5000/Action",
+            url: reqURL,
 			
-			success: result => {
-				max_val = result;
-				console.log(result);
+			success: function(data) {
+                max_val = parseInt(data);
+                //console.log("# of phrases in this library: " + max_val);    //TEST
 			},
 		});
+    }
 
-		//Check if phrase # is out of bounds and reset accordingly
-		if ($('#phraseNumber').val() > max_val) {
-			$('#phrase').empty().append(1);
-		} else if ($('#phraseNumber').val() < 1) {
-			$('#phrase').empty().append(max_val);
-		}
-
-		//REQUEST: Fetch phrase text form xml, search by 'id'
-		$.ajax({ // Post-Request: Get Phrase from xml file by id and display text string 
+    function req_getDatasets() {
+        $.ajax({ //Get total number of phrases in xml library file
 			type: "POST",
 			data: {
-				action: "getPhrase", 				// Will forward to getPhrase()
-				idDataset: $('#dataset').val(), 	// Pass value of "Dataset"
-				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
+				action: "getDatasets", 				// Will forward to getPhrase()
 			},
-			url: "http://localhost:5000/Action",
+            url: reqURL,
 			
-			success: result => {
-				$('#phrase').empty().append(result); // Display new phrase to user
-				console.log(result);
+			success: function(data) {
+                var files = data.split(' '); // split string on comma space
+
+                files.forEach((element, index) => {
+                    let option = document.createElement('option');
+                    option.value = index;          // Add index to option
+                    option.textContent = element;  // Add element HTML
+                    $('#dataset').append(option);  // Append option to Dataset (select)
+                  });
+
+                console.log(files);     //TEST
 			},
 		});
-	}
-	
-	$(document).on("input", "#phraseNumber", selectPhrase);
+    }
+
+    function selectPhrase() {
+        req_numPhrase();    //Get the total number of phrases in the file
+
+		//Check if phrase # is out of bounds and reset accordingly
+        p_num = parseInt($('#phraseNumber').val());
+		if (p_num > max_val) {
+            $('#phraseNumber').val(1);
+		} else if (p_num < 1) {
+            $('#phraseNumber').val(max_val);
+		}
+
+		req_getPhrase();    // Get the actual text of the phrase selected
+	}//selectPhrase()
+        
+    $(document).on("input", "#phraseNumber", selectPhrase);
+
+    $(document).on("input", "#dataset", function() {
+        $('#phraseNumber').val(0);                      // begin number field at 0
+        $('#phrase').empty().append("Hello, World.");   // default prompt
+        max_val = 1;                                    // default value
+        selectPhrase();
+        console.log("New phrase library selected.");    //TEST
+    });
 
 	//main
 	if (navigator.mediaDevices) {
