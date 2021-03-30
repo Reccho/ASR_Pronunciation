@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from flask_cors import CORS, cross_origin #bypassing CORS locally
 import xml.etree.ElementTree as ET     #XML tree toolkit
 import os, os.path, subprocess, time, wave, contextlib
+import torch
 from argparse import ArgumentParser
 from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
@@ -73,7 +74,7 @@ def audio_Duration(filename):
     return duration
 
 #Run 'ffmpeg -i "input_file.mp3" -ar 16000 -ac 1 "output.wav"' on file
-def audio_Format(input, output):
+def audio_Reformat(input, output):
     cmd = "ffmpeg -i " + input + " -ar 16000 -ac 1 " + output
     subprocess.Popen(cmd, 
         shell=True, 
@@ -85,8 +86,8 @@ def audio_Format(input, output):
 
 #Prepare the dataset to be fed to ASR
 def prep_Dataset(filename, duration, text):
-	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
-	cmd = "echo " + contents + " >" + audiopath + "dataset.json"
+	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + str(duration) + ", \"text\": \"" + text + "\"}"
+	cmd = "echo " + contents + " >" + "./" + "dataset.json"
 	subprocess.Popen(cmd, 
         shell=True, 
         stdout=subprocess.PIPE, 
@@ -157,7 +158,6 @@ def Grade(dataset):
 
 
 
-# create the Flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -167,9 +167,21 @@ def index():
 
 @app.route('/Grade', methods=['POST']) #ajax uses GET by def.
 def grade():    # get audio --> return grade
-    f = open('./sample.wav', 'wb')
-    f.write(request.data)
-    f.close()
+    #phrase = request.form['phrase']
+    phrase_file = open("./sample.txt", "r")
+    phrase = phrase_file.read()
+    phrase_file.close()
+    #
+    f = open('./input.wav', 'wb')   #create file for input
+    f.write(request.data)           #write audio to file
+    f.close()                       #
+    #
+    audio_Reformat("./input.wav", "./sample.wav")   # Reformat audio w/ ffmpeg
+    dur = audio_Duration("./sample.wav")       # Get duration of sample
+    prep_Dataset("./sample.wav", dur, phrase)
+    #
+    # pass to ASR
+    #
     return "File written."
 
 @app.route('/Library', methods=['POST']) #ajax uses GET by def.
@@ -183,6 +195,9 @@ def query():
         idP = request.form['idPhrase']
         idD = request.form['idDataset']
         phrase = phrase_Get(idD, idP)
+        storeTxt = open(r'./sample.txt','w')
+        storeTxt.write(phrase)
+        storeTxt.close()
         return phrase
     elif action == "getDatasets":       # get dataset name --> return dataset title, open xml tree
         files = getDatasets(LibPath, "xml")
