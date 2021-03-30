@@ -88,8 +88,8 @@ $(document).ready(function () {
         selectPhrase();
         console.log("New phrase library selected.");    //TEST
     });
-
-	//"main"
+    
+    //"main"
     if (navigator.mediaDevices) {
         var audio = { audio: true };
         var chunks = [];
@@ -123,9 +123,6 @@ $(document).ready(function () {
 
                 // On-Click: "Grade"
 				$("#grade").click(function() {
-					//var form = new FormData();
-					//form.append('audio', audioBlob);
-
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
 						url: reqRUL_Grade,
                         type: "POST",
@@ -133,6 +130,7 @@ $(document).ready(function () {
                         processData: false,
                         //dataType: 'audiodata',
                         data: audioBlob,
+                        phrase: $('#phraseNumber').val(),
 						
 						success: function(data) {
 							$('#score').empty().append(data);
