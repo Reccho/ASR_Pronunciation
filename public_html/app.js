@@ -78,7 +78,7 @@ $(document).ready(function () {
 
 		req_getPhrase();    // Get the actual text of the phrase selected
 	}//selectPhrase()
-
+    
     function refreshSpectro(){    
         var img = document.getElementById("spectrogram");
         var timestamp = new Date().getTime();   // create a new timestamp 
@@ -86,7 +86,8 @@ $(document).ready(function () {
 
         img.src = "../temp/spectro.png" + queryString;  // "?---" is discarded
     }
-        
+
+
     $(document).on("input", "#phraseNumber", selectPhrase);
 
     $(document).on("input", "#dataset", function() {
@@ -96,6 +97,7 @@ $(document).ready(function () {
         selectPhrase();
         console.log("New phrase library selected.");    //TEST
     });
+
     
     //"main"
     if (navigator.mediaDevices) {
@@ -152,15 +154,17 @@ $(document).ready(function () {
                         data: audioBlob,
                         phrase: $('#phraseNumber').val(),
 						
-			success: function(data) {
-				$('#score').empty().append(data);
-				$('#score').append("%");
-				refreshSpectro();
-				console.log(data);     //TEST
-                        	//console.log(audioBlob.chunks);
-			}
-		});                    
-		});
+						success: function(data) {
+                            $('#score').empty().append("Score: ");
+							$('#score').append(data);
+							$('#score').append("%");
+
+							refreshSpectro();
+                            console.log(data);     //TEST
+                            //console.log(audioBlob.chunks);
+						}
+					});                    
+				});
 
 
                 mediaRecorder.onstop = function (e) {
@@ -185,4 +189,3 @@ $(document).ready(function () {
             })
     }
 });
-
