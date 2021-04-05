@@ -1,16 +1,16 @@
 from flask import Flask, render_template, request
 from flask_cors import CORS, cross_origin #bypassing CORS locally
 import xml.etree.ElementTree as ET     #XML tree toolkit
-import os, os.path, subprocess, time, wave, contextlib
+import os, os.path, subprocess, time, wave, contextlib, librosa, librosa.display
+import IPython.display as ipd
+import matplotlib.pyplot as plt
 import torch
 from argparse import ArgumentParser
 from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
 from nemo.utils import logging
 
-LibPath = "C:/Users/Reccho/Documents/Launch/ISP/libraries/"
-# Local path: "C:/Users/Reccho/Documents/Launch/ISP/libraries/"
-# Cluster path: ""
+LibPath = "./lib/"
 
 #Search xml file for phrase by id and return text string
 def phrase_Get(filename, itemNum):
@@ -156,6 +156,15 @@ def Grade(dataset):
     score = (round((wer_value / args.wer_tolerance), 4) * 100)
     return score
 
+#Create Spectrogram
+def Spectro(filename):
+    plt.figure(figsize=(15,4))
+    data1,sample_rate1 = librosa.load(filename, sr=22050, mono=True, offset=0.0, duration=50, res_type='kaiser_best')
+    librosa.display.waveplot(data1,sr=sample_rate1, max_points=50000.0, x_axis='time', offset=0.0, max_sr=1000)
+    fig = plt.Figure()          #create spectrogram figure
+    plt.draw()
+    plt.savefig('./temp/spectro.png')  #save spectrogram to image file
+    #plt.show()
 
 
 app = Flask(__name__)
@@ -168,17 +177,18 @@ def index():
 @app.route('/Grade', methods=['POST']) #ajax uses GET by def.
 def grade():    # get audio --> return grade
     #phrase = request.form['phrase']
-    phrase_file = open("./sample.txt", "r")
+    phrase_file = open("./temp/sample.txt", "r")
     phrase = phrase_file.read()
     phrase_file.close()
     #
-    f = open('./input.wav', 'wb')   #create file for input
+    f = open('./temp/input.wav', 'wb')   #create file for input
     f.write(request.data)           #write audio to file
     f.close()                       #
     #
-    audio_Reformat("./input.wav", "./sample.wav")   # Reformat audio w/ ffmpeg
-    dur = audio_Duration("./sample.wav")       # Get duration of sample
-    prep_Dataset("./sample.wav", dur, phrase)
+    audio_Reformat("./temp/input.wav", "./temp/sample.wav")   # Reformat audio w/ ffmpeg
+    dur = audio_Duration("./temp/sample.wav")       # Get duration of sample
+    prep_Dataset("./temp/sample.wav", dur, phrase)
+    Spectro("./temp/input.wav")
     #
     # pass to ASR
     #
@@ -195,15 +205,21 @@ def query():
         idP = request.form['idPhrase']
         idD = request.form['idDataset']
         phrase = phrase_Get(idD, idP)
-        storeTxt = open(r'./sample.txt','w')
-        storeTxt.write(phrase)
-        storeTxt.close()
         return phrase
     elif action == "getDatasets":       # get dataset name --> return dataset title, open xml tree
-        files = getDatasets(LibPath, "xml")
+        files = getDatasets("./lib/", "xml")
         filesStr = " "
         return (filesStr.join(files))
     return ":)"
+
+@app.route('/Store', methods=['POST']) #ajax uses GET by def.
+def storeSam():    # write Phrase to sample.txt
+    phrase = request.form['text']
+    print(phrase)
+    storeTxt = open(r'./temp/sample.txt','w')
+    storeTxt.write(phrase)
+    storeTxt.close()
+    return "Phrase -> 'sample.txt'"
 
 if __name__ == '__main__':
     app.run(debug=True)
