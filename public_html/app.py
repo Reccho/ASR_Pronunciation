@@ -30,6 +30,16 @@ def phrase_Num(filename):
 def getDatasets(path, ext):
     return (f for f in os.listdir(path) if f.endswith('.' + ext))
 
+#Create Spectrogram
+def Spectro(filename):
+    plt.figure(figsize=(15,4))
+    data1,sample_rate1 = librosa.load(filename, sr=22050, mono=True, offset=0.0, duration=50, res_type='kaiser_best')
+    librosa.display.waveplot(data1,sr=sample_rate1, max_points=50000.0, x_axis='time', offset=0.0, max_sr=1000)
+    fig = plt.Figure()          #create spectrogram figure
+    plt.draw()
+    plt.savefig('./temp/spectro.png')  #save spectrogram to image file
+    #plt.show()
+
 #Phonemize "phrase" to get phonetic representation
 def phonemize(phrase):
     cmd = "echo " + phrase + " | phonemize"
@@ -155,16 +165,6 @@ def Grade(dataset):
 
     score = (round((wer_value / args.wer_tolerance), 4) * 100)
     return score
-
-#Create Spectrogram
-def Spectro(filename):
-    plt.figure(figsize=(15,4))
-    data1,sample_rate1 = librosa.load(filename, sr=22050, mono=True, offset=0.0, duration=50, res_type='kaiser_best')
-    librosa.display.waveplot(data1,sr=sample_rate1, max_points=50000.0, x_axis='time', offset=0.0, max_sr=1000)
-    fig = plt.Figure()          #create spectrogram figure
-    plt.draw()
-    plt.savefig('./temp/spectro.png')  #save spectrogram to image file
-    #plt.show()
 
 
 app = Flask(__name__)
