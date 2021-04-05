@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $("#spectrogram").hide();                       //visible/hidden
+    //$("#spectrogram").hide();                       //visible/hidden
     $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default prompt
     max_val = 1;                                    // default value
@@ -78,6 +78,14 @@ $(document).ready(function () {
 
 		req_getPhrase();    // Get the actual text of the phrase selected
 	}//selectPhrase()
+
+    function refreshSpectro(){    
+        var img = document.getElementById("spectrogram");
+        var timestamp = new Date().getTime();   // create a new timestamp 
+        var queryString = "?t=" + timestamp;    // add to image filename
+
+        img.src = "../temp/spectro.png" + queryString;  // "?---" is discarded
+    }
         
     $(document).on("input", "#phraseNumber", selectPhrase);
 
@@ -106,7 +114,7 @@ $(document).ready(function () {
                     mediaRecorder.start();			// Start recording
 
                     //Button updates
-                    $("#spectrogram").hide();                   //visible/hidden
+                    //$("#spectrogram").hide();                   //visible/hidden
                     $("#stop").attr("disabled", false);			//enable
                     $("#grade").attr("disabled", true);			//disable
                     $("#record").attr("disabled", true);		//disable
@@ -144,15 +152,15 @@ $(document).ready(function () {
                         data: audioBlob,
                         phrase: $('#phraseNumber').val(),
 						
-						success: function(data) {
-							$('#score').empty().append(data);
-							$('#score').append("%");
-                            $("#spectrogram").show();                   //visible/hidden
-							console.log(data);     //TEST
-                            //console.log(audioBlob.chunks);
-						}
-					});                    
-				});
+			success: function(data) {
+				$('#score').empty().append(data);
+				$('#score').append("%");
+				refreshSpectro();
+				console.log(data);     //TEST
+                        	//console.log(audioBlob.chunks);
+			}
+		});                    
+		});
 
 
                 mediaRecorder.onstop = function (e) {
