@@ -1,8 +1,5 @@
-reqRUL_Library = "http://localhost:5000/Library";    //Local
-reqRUL_Grade = "http://localhost:5000/Grade";    //Local
-//reqURL = "Action", "Grade";    //Cluster
-
 $(document).ready(function () {
+    $("#spectrogram").hide();                       //visible/hidden
     $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default prompt
     max_val = 1;                                    // default value
@@ -17,7 +14,8 @@ $(document).ready(function () {
 				idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
 			},
-            url: reqRUL_Library,
+            url: "http://localhost:5000/Library",
+			//url: "/Library",
 			
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
@@ -33,7 +31,8 @@ $(document).ready(function () {
 				action: "numPhrase", 				// Will forward to getPhrase()
                 idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 			},
-            url: reqRUL_Library,
+            url: "http://localhost:5000/Library",
+            //url: "/Library",
 			
 			success: function(data) {
                 max_val = parseInt(data);
@@ -48,7 +47,8 @@ $(document).ready(function () {
 			data: {
 				action: "getDatasets", 				// Will forward to getPhrase()
 			},
-            url: reqRUL_Library,
+            url: "http://localhost:5000/Library",
+            //url: "Library",
 			
 			success: function(data) {
                 var files = data.split(' '); // split string on space
@@ -106,6 +106,7 @@ $(document).ready(function () {
                     mediaRecorder.start();			// Start recording
 
                     //Button updates
+                    $("#spectrogram").hide();                   //visible/hidden
                     $("#stop").attr("disabled", false);			//enable
                     $("#grade").attr("disabled", true);			//disable
                     $("#record").attr("disabled", true);		//disable
@@ -114,6 +115,16 @@ $(document).ready(function () {
                 // On-Click: "Stop"
                 $("#stop").click(function () {
                     mediaRecorder.stop();	// Stop recording
+                    $.ajax({ //REQUEST: Store the text prompt in 'sample.txt'
+                        url: "http://localhost:5000/Store",
+                        //url: "/Store",
+                        type: "POST",
+                        data: {text: $("#phrase").text() },
+                        
+                        success: function(data) {
+                            console.log(data);     //TEST
+                        }
+                    });
 
                     //Button updates
                     $("#record").attr("disabled", false);		//enable
@@ -124,7 +135,8 @@ $(document).ready(function () {
                 // On-Click: "Grade"
 				$("#grade").click(function() {
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
-						url: reqRUL_Grade,
+                        url: "http://localhost:5000/Grade",
+						//url: "/Grade",
                         type: "POST",
                         contentType: false,
                         processData: false,
@@ -135,10 +147,11 @@ $(document).ready(function () {
 						success: function(data) {
 							$('#score').empty().append(data);
 							$('#score').append("%");
+                            $("#spectrogram").show();                   //visible/hidden
 							console.log(data);     //TEST
                             //console.log(audioBlob.chunks);
 						}
-					});
+					});                    
 				});
 
 
@@ -164,3 +177,4 @@ $(document).ready(function () {
             })
     }
 });
+
