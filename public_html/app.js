@@ -1,21 +1,21 @@
 $(document).ready(function () {
-    //$("#spectrogram").hide();                       //visible/hidden
+    LocalHost = "http://localhost:5000"             // '' or http://localhost:5000
+    $("#spectrogram").hide();                       // toggle: hide/show
     $('#phraseNumber').val(0);                      // begin number field at 0
-    $('#phrase').empty().append("Hello, World.");   // default prompt
+    $('#phrase').empty().append("Hello, World.");   // default phrase
     max_val = 1;                                    // default value
     req_getDatasets();
 
     //Request Functions
     function req_getPhrase() {
         $.ajax({ // Post-Request: Get Phrase from xml file by id and display text string 
+            url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
 				action: "getPhrase", 				// Will forward to getPhrase()
 				idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
 			},
-            url: "http://localhost:5000/Library",
-			//url: "/Library",
 			
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
@@ -26,29 +26,26 @@ $(document).ready(function () {
 
     function req_numPhrase() {
 		$.ajax({ //Get total number of phrases in xml library file
+            url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
 				action: "numPhrase", 				// Will forward to getPhrase()
                 idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 			},
-            url: "http://localhost:5000/Library",
-            //url: "/Library",
 			
 			success: function(data) {
                 max_val = parseInt(data);
-                //console.log("# of phrases in this library: " + max_val);    //TEST
 			},
 		});
     }
 
     function req_getDatasets() {
         $.ajax({ //Get total number of phrases in xml library file
+            url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
 				action: "getDatasets", 				// Will forward to getPhrase()
 			},
-            url: "http://localhost:5000/Library",
-            //url: "Library",
 			
 			success: function(data) {
                 var files = data.split(' '); // split string on space
@@ -60,11 +57,12 @@ $(document).ready(function () {
                     $('#dataset').append(option);  // Append option to Dataset (select)
                   });
 
-                console.log(files);     //TEST
+                console.log("Datasets available: ", files);     //TEST
 			},
 		});
     }
 
+    //Utility Functions
     function selectPhrase() {
         req_numPhrase();    //Get the total number of phrases in the file
 
@@ -77,17 +75,17 @@ $(document).ready(function () {
 		}
 
 		req_getPhrase();    // Get the actual text of the phrase selected
-	}//selectPhrase()
+	}
     
     function refreshSpectro(){    
         var img = document.getElementById("spectrogram");
         var timestamp = new Date().getTime();   // create a new timestamp 
-        var queryString = "?t=" + timestamp;    // add to image filename
+        var queryStr = "?t=" + timestamp;    // add to image filename
 
-        img.src = "../temp/spectro.png" + queryString;  // "?---" is discarded
+        img.src = "../temp/spectro.png" + queryStr;  // "?---" is discarded
     }
 
-
+    //On-Input functions
     $(document).on("input", "#phraseNumber", selectPhrase);
 
     $(document).on("input", "#dataset", function() {
@@ -116,7 +114,7 @@ $(document).ready(function () {
                     mediaRecorder.start();			// Start recording
 
                     //Button updates
-                    //$("#spectrogram").hide();                   //visible/hidden
+                    //$("#spectrogram").hide();                 // toggle: hide/show
                     $("#stop").attr("disabled", false);			//enable
                     $("#grade").attr("disabled", true);			//disable
                     $("#record").attr("disabled", true);		//disable
@@ -125,9 +123,9 @@ $(document).ready(function () {
                 // On-Click: "Stop"
                 $("#stop").click(function () {
                     mediaRecorder.stop();	// Stop recording
+
                     $.ajax({ //REQUEST: Store the text prompt in 'sample.txt'
-                        url: "http://localhost:5000/Store",
-                        //url: "/Store",
+                        url: (LocalHost + "/Store_Phrase"),
                         type: "POST",
                         data: {text: $("#phrase").text() },
                         
@@ -145,27 +143,18 @@ $(document).ready(function () {
                 // On-Click: "Grade"
 				$("#grade").click(function() {
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
-                        url: "http://localhost:5000/Grade",
-						//url: "/Grade",
+                        url: (LocalHost + "/Grade"),
                         type: "POST",
-                        contentType: false,
-                        processData: false,
-                        //dataType: 'audiodata',
-                        data: audioBlob,
-                        phrase: $('#phraseNumber').val(),
 						
 						success: function(data) {
                             $('#score').empty().append("Score: ");
 							$('#score').append(data);
 							$('#score').append("%");
 
-							refreshSpectro();
                             console.log(data);     //TEST
-                            //console.log(audioBlob.chunks);
 						}
-					});                    
+					});
 				});
-
 
                 mediaRecorder.onstop = function (e) {
                     clipName = $("#dataset").val() + "_" + $("#phraseNumber").val();
@@ -176,11 +165,25 @@ $(document).ready(function () {
 
                     if ($("#autoplay").is(":checked"))
                         $("#playback").trigger("play");
+
+                    $.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
+                        url: (LocalHost + "/Store_Audio"),
+                        type: "POST",
+                        contentType: false,
+                        processData: false,
+                        data: audioBlob,
+                        
+                        success: function(data) {
+                            refreshSpectro();
+                            $("#spectrogram").show();   // toggle: hide/show
+                            console.log(data);          //TEST
+                        }
+                    });
                 }
 
                 mediaRecorder.ondataavailable = function (e) {
                     chunks.push(e.data);
-                    console.log(e.data);
+                    console.log("New recording: ", e.data);
                 }
 
             })
