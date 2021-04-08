@@ -86,7 +86,7 @@ def audio_Duration(filename):
 #Reformat audio via ffmpeg
 def audio_Reformat(input, output):
     cmd = "ffmpeg -i " + input + " -ar 16000 -ac 1 " + output
-    os.system(cmd)
+    subprocess.run(cmd)
     return
 
 #Prepare the dataset to be fed to ASR
