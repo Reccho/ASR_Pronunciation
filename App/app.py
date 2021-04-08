@@ -4,11 +4,12 @@ import os, os.path, subprocess, signal, time, random, librosa, librosa.display, 
 import xml.etree.ElementTree as ET #XML tree toolkit
 import IPython.display as ipd
 import matplotlib.pyplot as plt
-#import torch
-#from argparse import ArgumentParser
-#from nemo.collections.asr.metrics.wer import WER, word_error_rate
-#from nemo.collections.asr.models import EncDecCTCModel
-#from nemo.utils import logging
+#ASR-related packages
+import torch
+from argparse import ArgumentParser
+from nemo.collections.asr.metrics.wer import WER, word_error_rate
+from nemo.collections.asr.models import EncDecCTCModel
+from nemo.utils import logging
 
 LibPath = "./lib/"
 
@@ -85,12 +86,7 @@ def audio_Duration(filename):
 #Reformat audio via ffmpeg
 def audio_Reformat(input, output):
     cmd = "ffmpeg -i " + input + " -ar 16000 -ac 1 " + output
-    
-
-
-
-
-    
+    os.system(cmd)
     return
 
 #Prepare the dataset to be fed to ASR
@@ -104,7 +100,6 @@ def prep_Dataset(filename, duration, text):
         universal_newlines=True)
     return
 
-'''
 #Run the ASR on 'dataset.json', return score
 def ASR_Grade(dataset):
     #Running the ASR
@@ -165,7 +160,6 @@ def ASR_Grade(dataset):
 
     score = (round((wer_value / args.wer_tolerance), 4) * 100)
     return score
-'''
 
 
 
@@ -230,13 +224,13 @@ def grade():    # get audio --> return grade
     phrase_file.close()
 
     audio_Reformat("./temp/input.wav", "./temp/sample.wav")     # Reformat audio
-    #duration = audio_Duration("./temp/input.wav")               # Get duration of audio
-    #prep_Dataset("./temp/sample.wav", duration, phrase)         # Create dataset.json
+    duration = audio_Duration("./temp/sample.wav")               # Get duration of audio
+    prep_Dataset("./temp/sample.wav", duration, phrase)         # Create dataset.json
     
-    #score = ASR_Grade("./temp/dataset.json")
+    score = ASR_Grade("./temp/dataset.json")
+    #score = (round((random.random()), 4) * 100)
     
-    #return str(score)
-    return str(random.random())
+    return str(score)
 
 if __name__ == '__main__':
     app.run(debug=True)
