@@ -1,21 +1,20 @@
 from flask import Flask, render_template, request
 from flask_cors import CORS, cross_origin #bypassing CORS locally
-import xml.etree.ElementTree as ET     #XML tree toolkit
-import os, os.path, subprocess, time, wave, contextlib, librosa, librosa.display
+import os, os.path, subprocess, signal, time, random, librosa, librosa.display, wave, contextlib, shutil
+import xml.etree.ElementTree as ET #XML tree toolkit
 import IPython.display as ipd
 import matplotlib.pyplot as plt
-import torch
-from argparse import ArgumentParser
-from nemo.collections.asr.metrics.wer import WER, word_error_rate
-from nemo.collections.asr.models import EncDecCTCModel
-from nemo.utils import logging
+#import torch
+#from argparse import ArgumentParser
+#from nemo.collections.asr.metrics.wer import WER, word_error_rate
+#from nemo.collections.asr.models import EncDecCTCModel
+#from nemo.utils import logging
 
 LibPath = "./lib/"
 
 #Search xml file for phrase by id and return text string
 def phrase_Get(filename, itemNum):
     tree = ET.parse(LibPath + filename)   # Create tree from xml file
-    print(LibPath + filename)
     root = tree.getroot()                                                           # Start at root
     text = root.find('.//phrase[@id="{value}"]'.format(value=itemNum)).text         # Search for matching id, pull text
     return text
@@ -28,6 +27,7 @@ def phrase_Num(filename):
 
 #Return .xml files in library directory
 def getDatasets(path, ext):
+    #Get list of all files and trim non-.xml documents
     return (f for f in os.listdir(path) if f.endswith('.' + ext))
 
 #Create Spectrogram
@@ -80,33 +80,33 @@ def audio_Duration(filename):
         frames = f.getnframes()
         rate = f.getframerate()
         duration = frames / float(rate)
-        #print(duration)
     return duration
 
-#Run 'ffmpeg -i "input_file.mp3" -ar 16000 -ac 1 "output.wav"' on file
+#Reformat audio via ffmpeg
 def audio_Reformat(input, output):
     cmd = "ffmpeg -i " + input + " -ar 16000 -ac 1 " + output
-    subprocess.Popen(cmd, 
-        shell=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        #universal_newlines=True
-        )
+    
+
+
+
+
+    
     return
 
 #Prepare the dataset to be fed to ASR
 def prep_Dataset(filename, duration, text):
-	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + str(duration) + ", \"text\": \"" + text + "\"}"
-	cmd = "echo " + contents + " >" + "./" + "dataset.json"
-	subprocess.Popen(cmd, 
+    contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + str(duration) + ", \"text\": \"" + text + "\"}"
+    cmd = "echo " + contents + " >" + "./temp/dataset.json"
+    subprocess.Popen(cmd, 
         shell=True, 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE, 
         universal_newlines=True)
-	return
+    return
 
+'''
 #Run the ASR on 'dataset.json', return score
-def Grade(dataset):
+def ASR_Grade(dataset):
     #Running the ASR
     parser = ArgumentParser()
     parser.add_argument(
@@ -165,6 +165,8 @@ def Grade(dataset):
 
     score = (round((wer_value / args.wer_tolerance), 4) * 100)
     return score
+'''
+
 
 
 app = Flask(__name__)
@@ -173,26 +175,6 @@ CORS(app)
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/Grade', methods=['POST']) #ajax uses GET by def.
-def grade():    # get audio --> return grade
-    #phrase = request.form['phrase']
-    phrase_file = open("./temp/sample.txt", "r")
-    phrase = phrase_file.read()
-    phrase_file.close()
-    #
-    f = open('./temp/input.wav', 'wb')   #create file for input
-    f.write(request.data)           #write audio to file
-    f.close()                       #
-    #
-    audio_Reformat("./temp/input.wav", "./temp/sample.wav")   # Reformat audio w/ ffmpeg
-    dur = audio_Duration("./temp/sample.wav")       # Get duration of sample
-    prep_Dataset("./temp/sample.wav", dur, phrase)
-    Spectro("./temp/input.wav")
-    #
-    # pass to ASR
-    #
-    return "File written."
 
 @app.route('/Library', methods=['POST']) #ajax uses GET by def.
 def query():
@@ -212,14 +194,49 @@ def query():
         return (filesStr.join(files))
     return ":)"
 
-@app.route('/Store', methods=['POST']) #ajax uses GET by def.
-def storeSam():    # write Phrase to sample.txt
+@app.route('/Store_Phrase', methods=['POST']) #ajax uses GET by def.
+def storePhrase():    # write Phrase to sample.txt
+    #Clear 'temp' folder contents first
+    folder = './temp'
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+    #
     phrase = request.form['text']
-    print(phrase)
     storeTxt = open(r'./temp/sample.txt','w')
     storeTxt.write(phrase)
     storeTxt.close()
     return "Phrase -> 'sample.txt'"
+
+@app.route('/Store_Audio', methods=['POST']) #ajax uses GET by def.
+def storeAudio():    # write Audio to input.wav
+    f = open('./temp/input.wav', 'wb')   #create file for input
+    f.write(request.data)           #write audio to file
+    f.close()                       #
+    #
+    Spectro("./temp/input.wav")
+    return "Audio -> 'input.wav', spectrogram created"
+
+@app.route('/Grade', methods=['POST']) #ajax uses GET by def.
+def grade():    # get audio --> return grade    
+    phrase_file = open("./temp/sample.txt", "r", 0o555)
+    phrase = phrase_file.read()                                 # get phrase text
+    phrase_file.close()
+
+    audio_Reformat("./temp/input.wav", "./temp/sample.wav")     # Reformat audio
+    #duration = audio_Duration("./temp/input.wav")               # Get duration of audio
+    #prep_Dataset("./temp/sample.wav", duration, phrase)         # Create dataset.json
+    
+    #score = ASR_Grade("./temp/dataset.json")
+    
+    #return str(score)
+    return str(random.random())
 
 if __name__ == '__main__':
     app.run(debug=True)
