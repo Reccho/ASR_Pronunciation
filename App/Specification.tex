@@ -1,0 +1,105 @@
+% PREAMBLE
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\title{Pronunciation Checking with ASR}
+\author{Evan Nichols}
+\date{Winter Semester 2020/2021}
+
+\begin{document}
+\maketitle
+\section*{Introduction}
+This program will present the user with a simple web page under which a neural network will process their audio input, returning a grade upon completion that denotes how well the user pronounced a text prompt. Structurally, the application consists of a web page UI, supported by a back end that is mainly the neural network which processes the user’s input and returns the output. This back end will be written in Python and use the NeMo toolkit provided by NVIDIA.
+
+
+\section*{Structure}
+The web page’s design will be minimal, with only five buttons and a few text fields. HTML and CSS, together with JavaScript, will define and represent the page, and link it to the underlying neural network and other tools. A few buttons make up the user-controllable fields in a straightforward toolbar: Record, Stop, and Grade, as well as an interface to preview the recorded audio and select new phrases from a set of datasets. Together with the main audio processing module, these make up the main functions of the program.
+
+The underlying neural network is the main component of the project and the area to which the most time will be devoted. It accepts an audio input in the form of a .WAV file, and output text based on the result, straight into a text field on the webpage. The text prompt may be one of a set of given words/sentences, or a possibly randomized word/sequence of words. What is essential is that the network has access to a large library of phonetic representations of the words/phrases. Because the program is grading pronunciation, the spelling is secondary to the phonetic structure. 
+
+The application is hosted on the Artificial Intelligence Cluster (AIC) run by the Matfyz Faculty.  
+
+
+\section*{Main Functions}
+Every function except the neural network will be accessible to the user via a toolbar on the webpage. The network is not publicly accessible, but is initiated when the user activates the “Grade” button. A possible modification is the addition of a seperate “Send” function that actually submits the input to the network, but for now “Grade” fulfills this function. These are the publicly accessible functions found on the webpage:
+
+\begin{itemize}
+  \item \textbf{Record} will open the microphone and allow the user to read the prompt and speak it out loud. Pressing Record should clear any previously saved audio, allowing the user to enter the prompt as many times as they like.
+  \item \textbf{Stop} will end the recording period, saving the spoken audio input and displaying the length in a small audio player-type widget. The Stop event also sends a request to create and display a spectrogram of the audio input.
+  \item \textbf{Playback} will allow the user to hear their input by playing back the recorded audio. 
+  \item \textbf{Grade} will activate the neural network computations using the recorded audio as input. The recorded audio will be passed to the neural network module and processed. Upon completion, a text field will display the result, in this case a percentage score based on the user’s pronunciation of the prompt. 
+\end{itemize}
+\subsection{Neural Network Model}
+This is where most of the actual computation will take place. The network receives a .WAV file that holds the user’s spoken audio input. From this raw audio the network picks out distinct sounds, which are combined to form certain syllables, which combine to form words, which are grouped to form phrases. 
+
+Here is a rough illustration of the network’s process: 
+$Raw Audio rightarrow r e c o g n i t i o n \rightarrow 
+re\bullet cog\bullet ni\bullet tion \rightarrow recognition$
+
+The “distinct sounds” are phones and phonemes, which are compiled in the International Phonetic Alphabet (IPA). 
+%Words have IPA keys, e.g. “Hello” = /\textipa{[\*hɛˈloʊ]}/.
+The network will evaluate the input audio and find a final phonetic representation. Each possible input phrase will be stored alongside its phonetic key. The user reads the prompt, submits their input, and the network’s output is compared against the expected output that is the prompt’s key. The final score which is presented to the user is directly based upon the network’s error rate.
+
+
+\section*{Tools/Languages}
+
+\subsection*{Nvidia NeMo}
+This toolkit includes reusable components called “Neural Modules” to build conversational AI that take typed inputs and produce typed outputs. Modules represent data layers, encoders, loss functions, and other essential pieces of neural network architecture.
+
+Dependencies:
+\begin{itemize}
+\item Python 3.6-7 https://www.python.org/
+
+Anaconda3 (open-source Python distribution) https://www.anaconda.com/products/ 
+Anaconda3 includes the Conda package management tool.
+
+\item Required: Pytorch 1.7 https://pytorch.org/
+
+Pytorch is similar to TensorFlow, but offers dynamic computation graphs.
+\end{itemize}
+
+\subsection*{Google Colaboratory}
+Google Colab allows building Python code in modular cells, making testing individual functions and sections of the program very easy. Colab is preferred over Jupyter Notebooks because Colab offers free GPU access via the CUDA package.
+
+I used this to test the neural network and individual functions before adding them to the main app. 
+
+\subsection*{Phonemizer}
+...
+
+\subsection*{FFmpeg}
+...
+
+\subsection*{Librosa \& Matplotlib}
+...
+
+\subsection*{HTML, CSS, JavaScript}
+These are used to build the front end of the program, a simple webpage.
+HTML defines the structure of the webpage.
+CSS defines the presentation of the webpage.
+JavaScript will link the webpage with the computational elements of the program, ie. the neural network and its input/output functions.
+
+
+\section*{Implementation}
+Steps:
+
+Allow user to choose from selection of datasets and phrases.
+
+Allow user to record speech (prompted by selected phrase).
+
+When recording ends, save speech to 'input.wav', phrase to 'sample.txt'.
+
+Create spectrogram from 'input.wav' and display to user.
+
+Allow user to "grade" their speech. This is done as follows:
+
+Reformat 'input.wav' w/ ffmpeg, save to 'sample.wav'.
+
+Get the duration of 'sample.wav', and text from 'sample.txt'.
+
+Pass these two items, along with filename 'sample.wav' to ASR function.
+
+Display the returned percentage score to user.
+
+Allow user to continue selecting phrases and grading speech.
+
+
+\end{document}
