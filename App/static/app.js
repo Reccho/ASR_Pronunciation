@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    LocalHost = "http://localhost:5000"             // '' or http://localhost:5000
+    LocalHost = ''             // '' or http://localhost:5000
     $("#spectrogram").hide();                       // toggle: hide/show
     $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default phrase
@@ -19,7 +19,7 @@ $(document).ready(function () {
 			
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
-				//console.log(data);
+				console.log(data);
 			},
 		});
     }
@@ -76,13 +76,14 @@ $(document).ready(function () {
 
 		req_getPhrase();    // Get the actual text of the phrase selected
 	}
-    
+
     function refreshSpectro(){    
         var img = document.getElementById("spectrogram");
         var timestamp = new Date().getTime();   // create a new timestamp 
         var queryStr = "?t=" + timestamp;    // add to image filename
 
-        img.src = "../temp/spectro.png" + queryStr;  // "?---" is discarded
+        img.src = "/home/nichols/sw_project/temp/spectro.png" + queryStr;     // "?t--" is discarded
+        $('#spectrogram').attr('src', "/home/nichols/sw_project/temp/spectro.png" + new Date().getTime());
     }
 
     //On-Input functions
@@ -123,7 +124,6 @@ $(document).ready(function () {
                 // On-Click: "Stop"
                 $("#stop").click(function () {
                     mediaRecorder.stop();	// Stop recording
-
                     $.ajax({ //REQUEST: Store the text prompt in 'sample.txt'
                         url: (LocalHost + "/Store_Phrase"),
                         type: "POST",
@@ -150,8 +150,8 @@ $(document).ready(function () {
                             $('#score').empty().append("Score: ");
 							$('#score').append(data);
 							$('#score').append("%");
-
-                            console.log(data);     //TEST
+                            
+                            console.log(data + "%");     //TEST
 						}
 					});
 				});
@@ -165,7 +165,7 @@ $(document).ready(function () {
 
                     if ($("#autoplay").is(":checked"))
                         $("#playback").trigger("play");
-
+                    
                     $.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
                         url: (LocalHost + "/Store_Audio"),
                         type: "POST",
@@ -173,10 +173,11 @@ $(document).ready(function () {
                         processData: false,
                         data: audioBlob,
                         
-                        success: function(data) {
-                            refreshSpectro();
+                        success: function(result) {
+                            //refreshSpectro();
+                            $('#spectrogram').attr('src', 'data:image/gif;base64,' + result);
                             $("#spectrogram").show();   // toggle: hide/show
-                            console.log(data);          //TEST
+                            //console.log(result);          //TEST
                         }
                     });
                 }
