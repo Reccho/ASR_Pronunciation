@@ -194,9 +194,6 @@ def ASR_Grade(dataset):
     return score
 
 
-#ssh -L 5000:localhost:5000 -J nichols@aic.ufal.mff.cuni.cz nichols@gpu-node*
-#qrsh -q 'gpu*' -cwd -b y -pe smp 1 -l gpu=2,mem_free=2G,act_mem_free=2G,h_data=2G, -pty yes bash -l
-
 #app._static_folder = os.path.abspath("static/")
 app = Flask(__name__, static_folder="./static/")
 CORS(app)
