@@ -1,10 +1,17 @@
 $(document).ready(function () {
-    LocalHost = ''             // '' or http://localhost:5000
+    var PAGE = window.location.href;
+    console.log(PAGE);
+    LocalHost = 'http://localhost:5000'             // '' or http://localhost:5000
+    var timestamp = new Date().getTime();           // create a new timestamp
+    var TS = timestamp.toString();                  // convert timestamp to string
     $("#spectrogram").hide();                       // toggle: hide/show
     $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default phrase
+    $("#grade").attr("disabled", true);		        //disable on load
+    $("#playback").attr("disabled", true);          // disable playback on page load
     max_val = 1;                                    // default value
     req_getDatasets();
+
 
     //Request Functions
     function req_getPhrase() {
@@ -19,7 +26,10 @@ $(document).ready(function () {
 			
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
-				console.log(data);
+                $('#score').empty(); // Clear old score/"you said" text
+				$("#grade").attr("disabled", true);
+                $("#playback").attr("src", '');
+                console.log(data);
 			},
 		});
     }
@@ -58,8 +68,23 @@ $(document).ready(function () {
                   });
 
                 console.log("Datasets available: ", files);     //TEST
+                console.log(TS);                         //TEST
 			},
 		});
+    }
+
+    window.onbeforeunload = function (e) {
+        e = e || window.event;
+        $.ajax({ //Get total number of phrases in xml library file
+            url: (LocalHost + "/Clear"),
+            type: "POST",
+            data: "clear",
+            
+            success: function(data) {
+                resolve(data);
+                console.log(data);     //TEST
+            },
+        });
     }
 
     //Utility Functions
@@ -114,11 +139,13 @@ $(document).ready(function () {
                     chunks = [];					// Set chunks empty
                     mediaRecorder.start();			// Start recording
 
-                    //Button updates
-                    //$("#spectrogram").hide();                 // toggle: hide/show
+                    //Element updates
+                    $("#spectrogram").hide();                 // toggle: hide/show
                     $("#stop").attr("disabled", false);			//enable
                     $("#grade").attr("disabled", true);			//disable
                     $("#record").attr("disabled", true);		//disable
+                    $("#playback").attr("disabled", true);      // disable
+                    $('#score').empty(); // Clear old score/"you said" text
                 });
 
                 // On-Click: "Stop"
@@ -135,6 +162,7 @@ $(document).ready(function () {
                     });
 
                     //Button updates
+                    $("#playback").attr("disabled", false);      //enable
                     $("#record").attr("disabled", false);		//enable
                     $("#grade").attr("disabled", false);		//enable
                     $("#stop").attr("disabled", true);			//disable
@@ -147,11 +175,18 @@ $(document).ready(function () {
                         type: "POST",
 						
 						success: function(data) {
-                            $('#score').empty().append("Score: ");
-							$('#score').append(data);
-							$('#score').append("%");
-                            
-                            console.log(data + "%");     //TEST
+                            if (data != "XXX") {    // If file is NOT the error value
+                                var grade = data.split('\n');
+                                $('#score').empty().append('\"' + grade[0] + '\"');
+                                $('#score').append('<br />' );
+                                $('#score').empty().append('\"' + grade[1] + '\"');
+                                $('#score').append('<br />' );
+                                $('#score').append('Correctness: ' + grade[2] + '%');
+                                console.log(data + "%");     //TEST
+                            } else {
+                                $('#score').empty().append("FILE NOT FOUND");
+                                console.log("FILE NOT FOUND");     //TEST
+                            }
 						}
 					});
 				});
@@ -174,7 +209,6 @@ $(document).ready(function () {
                         data: audioBlob,
                         
                         success: function(result) {
-                            //refreshSpectro();
                             $('#spectrogram').attr('src', 'data:image/gif;base64,' + result);
                             $("#spectrogram").show();   // toggle: hide/show
                             //console.log(result);          //TEST
