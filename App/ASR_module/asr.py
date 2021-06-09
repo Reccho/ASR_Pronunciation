@@ -5,6 +5,9 @@ from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
 from nemo.utils import logging
 
+datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
+mtime = 0.0     # Start modified-time at 0
+
 #Phonemize "phrase" to get phonetic representation
 def phonemize(phrase):
     cmd = "echo " + phrase + " | phonemize"
@@ -14,6 +17,7 @@ def phonemize(phrase):
         stderr=subprocess.PIPE, 
         universal_newlines=True)
     key = sub.communicate()[0]
+    print(key) #DEBUG
     return key
 
 #Run the ASR on 'dataset.json', return score
@@ -33,9 +37,11 @@ def ASR_Grade(dataset, id):
     parser.add_argument(
         "--asr_model",
         type=str,
-        default="QuartzNet15x5Base-En",
+        default="QuartzNet15x5Base-En",     #ASR = Words
+        #default="quartz_phon",    #ASR = Phonemes
         required=True,
-        help="Pass: 'QuartzNet15x5Base-En'",
+        help="Pass: 'QuartzNet15x5Base-En'",    #ASR = Words
+        #help="Pass: 'quartz_phon'",            #ASR = Phonemes
     )
     parser.add_argument(
         "--dataset", type=str, required=True, help="path to evaluation data"
@@ -50,7 +56,8 @@ def ASR_Grade(dataset, id):
     )
     # args = parser.parse_args(["--dataset", "dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
     args = parser.parse_args(
-        ["--dataset", dataset, "--asr_model", "QuartzNet15x5Base-En"]
+        ["--dataset", dataset, "--asr_model", "QuartzNet15x5Base-En"]   #ASR = Words
+        #["--dataset", dataset, "--asr_model", "quartz_phon"]   #ASR = Phonemes
     )
     torch.set_grad_enabled(False)
 
@@ -101,24 +108,23 @@ def ASR_Grade(dataset, id):
     for h, r in zip(hypotheses, references):
         print("Recognized:\t{}\nReference:\t{}\n".format(h, r))
         transcript = h
-
     logging.info(f"Got WER of {wer_value}. Tolerance was {args.wer_tolerance}")
 
 
     #Score Calculation, phoneme conversion
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
-    phonemes = phonemize(transcript)
 
     #RESULT FILE CREATION
-    Results = open('/home/nichols/sw_project/temp/' + id + '_graded.txt','w')
-    Results.write(transcript + '\n' + phonemes + '\n' + str(score))
+    Results = open(datasetPath + id + '_graded.txt','w')
+    Results.write(transcript + '\n' + str(score))
     Results.close()
+
+    print(transcript)   #DEBUG
+    print(score)        #DEBUG
     return score
 
 
-datasetPath = '/home/nichols/sw_project/temp/'
-mtime = 0.0
-
+#MAIN
 while True:
     time.sleep(1.0)
     for file in os.listdir(datasetPath):
@@ -128,26 +134,12 @@ while True:
                 continue
             else:
                 mtime = newtime
+                print('Detected fresh dataset.json...')
                 try:
                     arr = file.split('_', 1)
-                    print(arr[0])
+                    print(arr[0])   #uuid
                     ASR_Grade(datasetPath + file, arr[0])
                 except:
                     continue
         else:
             continue
-    '''
-    if os.path.exists('/home/nichols/sw_project/dataset/dataset.json') == True:
-        newtime = os.path.getmtime('/home/nichols/sw_project/dataset/dataset.json')
-        if newtime == mtime:
-            continue
-        else:
-            mtime = newtime
-            try:
-                print("Dataset changed.")
-                #ASR_Grade('/home/nichols/sw_project/dataset/dataset.json')
-            except:
-                continue
-    else:
-        continue
-    '''
