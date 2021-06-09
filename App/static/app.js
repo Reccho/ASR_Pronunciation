@@ -27,6 +27,7 @@ $(document).ready(function () {
 			success: function(data) {
 				$('#phrase').empty().append(data); // Display new phrase to user
                 $('#score').empty(); // Clear old score/"you said" text
+                $('#spectrogram').hide();
 				$("#grade").attr("disabled", true);
                 $("#playback").attr("src", '');
                 console.log(data);
@@ -175,17 +176,18 @@ $(document).ready(function () {
                         type: "POST",
 						
 						success: function(data) {
-                            if (data != "XXX") {    // If file is NOT the error value
+                            if (data != "###") {    // If file is NOT the error value
                                 var grade = data.split('\n');
-                                $('#score').empty().append('\"' + grade[0] + '\"');
+                                $('#score').empty().append('You said: \"' + grade[0] + '\"');
                                 $('#score').append('<br />' );
-                                $('#score').empty().append('\"' + grade[1] + '\"');
+                                $('#score').append('Phonetic: [' + grade[2] + ']');
                                 $('#score').append('<br />' );
-                                $('#score').append('Correctness: ' + grade[2] + '%');
-                                console.log(data + "%");     //TEST
+                                $('#score').append('Correctness: ' + grade[4] + '%');
+                                //console.log(data + "%");     //TEST
+                                console.log(grade);     //TEST
                             } else {
                                 $('#score').empty().append("FILE NOT FOUND");
-                                console.log("FILE NOT FOUND");     //TEST
+                                console.log("File does not exist or has wrong format.");     //TEST
                             }
 						}
 					});
