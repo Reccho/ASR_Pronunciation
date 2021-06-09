@@ -1,4 +1,4 @@
-from flask import Flask, render_template, make_response, request
+from flask import Flask, render_template, make_response, request, url_for
 from flask_cors import CORS, cross_origin #bypassing CORS locally
 import os, os.path, sys, stat, subprocess, signal, time, random, base64, uuid
 import librosa, librosa.display, wave, contextlib, shutil
@@ -6,9 +6,12 @@ import xml.etree.ElementTree as ET #XML tree toolkit
 import IPython.display as ipd
 import matplotlib.pyplot as plt
 
-LibPath = "/home/nichols/sw_project/lib/"
-thisPath = "/home/nichols/sw_project/"
-userID = ''
+from phonemizer import phonemize
+
+thisPath = "/home/nichols/sw_project/"      # Directory w/ this program
+LibPath = "/home/nichols/sw_project/lib/"   # Directory w/ phrase libraries
+tempPath = '/home/nichols/sw_project/temp/' # Directory which holds temp files created by program
+userID = ''                                 # String to hold UUID once it is created
 
 #region XML Library interactions (phrase fetching)
 #Search xml file for phrase by id and return text string
@@ -34,15 +37,19 @@ def getDatasets(path, ext):
 #region Shell Commands via Python
 #Clear files that begin w/ uuid + spectro.png
 def clear_Directory(directory, id):
-    print(directory + userID + "*")     #TEST
-    cmd1 = "rm " + directory + id + "*"     
-    cmd2 = "rm " + directory + "spectro.png"
-    subprocess.run(cmd1, shell=True)
-    subprocess.run(cmd2, shell=True)
+    #print(directory + userID + "*")     #DEBUG
+    cmd1 = "rm " + directory + id + "*"  #Command := "Delete all files in this dir w/ id in beginning of name"
+    subprocess.run(cmd1, shell=True)     #Run the 'rm' command
+    return
+
+#Reformat audio via ffmpeg
+def audio_Reformat(input, output):
+    cmd = "ffmpeg -y -i " + input + " -ar 16000 -ac 1 " + output    #sample rate = 16000, 1 audio channel
+    subprocess.run(cmd, shell=True)                                 #Run the command
     return
 
 #Phonemize "phrase" to get phonetic representation
-def phonemize(phrase):
+def Phonemize(phrase):
     cmd = "echo " + phrase + " | phonemize"
     sub = subprocess.Popen(cmd, 
         shell=True, 
@@ -50,6 +57,8 @@ def phonemize(phrase):
         stderr=subprocess.PIPE, 
         universal_newlines=True)
     key = sub.communicate()[0]
+    print(phrase)
+    print('->' + key) #DEBUG
     return key
 
 #Run 'soxi -D' on file "filename"
@@ -94,6 +103,7 @@ def Spectro(audioFile, imageFile):
     os.chmod(imageFile, 0o755)  # O-RWX, G-RX, U-RX
     #plt.show()
     plt.close()
+    return
 
 #Return duration of audio file 'filename'
 def audio_Duration(filename):
@@ -102,33 +112,25 @@ def audio_Duration(filename):
         rate = f.getframerate()
         duration = frames / float(rate)
     return duration
-
-#Reformat audio via ffmpeg
-def audio_Reformat(input, output):
-    cmd = "ffmpeg -y -i " + input + " -ar 16000 -ac 1 " + output
-    subprocess.run(cmd, shell=True)
-    return
     
 #Prepare the dataset to be fed to ASR
-def prep_Dataset(filename, duration, text):
-    #DS = open(thisPath + 'dataset/dataset.json','w')
-    DS = open(thisPath + 'temp/' + userID + '_dataset.json','w')
-    contents = '{"audio_filename": "' + filename + '", "duration": ' + str(duration) + ', "text": "' + text + '"}'
+def prep_Dataset(audio, duration, text):
+    DS = open(tempPath + userID + '_dataset.json','w')
+    contents = '{"audio_filename": "' + audio + '", "duration": ' + str(duration) + ', "text": "' + text + '"}'
     DS.write(contents)
     DS.close()
     return
 
 
-
-#app._static_folder = os.path.abspath("static/")
-app = Flask(__name__, static_folder="./static/")
+#Flask app creation, we can declare folders aside from the defaults
+app = Flask(__name__, static_folder="./static/", template_folder="../public_html")
 CORS(app)
 
 @app.route('/')
 def index():
     global userID
     userID = uuid.uuid4().hex
-    print('ID: ' + userID)  #TEST
+    print('ID: ' + userID)  #DEBUG
     return render_template('index.html')
 
 @app.route('/Library', methods=['POST']) #ajax uses GET by def.
@@ -150,7 +152,7 @@ def query():
 
 @app.route('/Store_Phrase', methods=['POST']) #ajax uses GET by def.
 def storePhrase():    # write Phrase to sample.txt
-    sampleFile = thisPath + 'temp/' + userID + '_sample.txt'  # Path for sample.txt
+    sampleFile = tempPath + userID + '_sample.txt'  # Path for sample.txt
     phrase = request.form['text']       # Extract phrase string
     storeTxt = open(sampleFile,'w')     # Create file to hold phrase
     storeTxt.write(phrase)              # Write phrase to file
@@ -160,25 +162,26 @@ def storePhrase():    # write Phrase to sample.txt
 
 @app.route('/Store_Audio', methods=['POST']) #ajax uses GET by def.
 def storeAudio():    # write Audio to input.wav, assemble dataset for ASR, create spectrogram
-    datasetFile = thisPath + 'temp/' + userID + '_sample.wav'   # Path for sample.wav
-    sampleFile = thisPath + 'temp/' + userID + '_sample.txt'    # Path for sample.txt
-    audioFile = thisPath + 'temp/' + userID + '_input.wav'      # Path for input.wav
+    sampleAudio = tempPath + userID + '_sample.wav' # Path for sample.wav
+    sampleText = tempPath + userID + '_sample.txt'  # Path for sample.txt
+    inputAudio = tempPath + userID + '_input.wav'   # Path for input.wav
     
-    f = open(audioFile, 'wb')   # create file for input
+    f = open(inputAudio, 'wb')  # create file for input
     f.write(request.data)       # write audio to file
     f.close()                   # close file
 
-    phrase_file = open(sampleFile, "r") # open phrase text file
+    phrase_file = open(sampleText, "r") # open phrase text file
     phrase = phrase_file.read()         # read phrase text string
     phrase_file.close()                 # close file
     
-    audio_Reformat(audioFile, datasetFile)      # Reformat audio
-    duration = audio_Duration(datasetFile)      # Get duration of audio
-    prep_Dataset(datasetFile, duration, phrase) # Create dataset.json
-    os.chmod(datasetFile, 0o755)                # O-RWX, G-RX, U-RX
+    audio_Reformat(inputAudio, sampleAudio)     # Reformat audio
+    duration = audio_Duration(sampleAudio)      # Get duration of audio
+    prep_Dataset(sampleAudio, duration, phrase) # Create dataset.json
+    os.chmod(sampleAudio, 0o755)                # O-RWX, G-RX, U-RX
     
-    Spectro(audioFile, thisPath + 'temp/spectro.png')
-    with open(thisPath + "temp/spectro.png", "rb") as png:
+    spectroFile = tempPath + userID + '_spectro.png'    # Path for spectro.png
+    Spectro(inputAudio, spectroFile)        # Create the spectrogram image file
+    with open(spectroFile, "rb") as png:    # Open the image file & read as bytes
         image_binary = png.read()
         response = make_response(base64.b64encode(image_binary))
         response.headers.set('Content-Type', 'image/gif')
@@ -187,23 +190,22 @@ def storeAudio():    # write Audio to input.wav, assemble dataset for ASR, creat
 
 @app.route('/Grade', methods=['POST']) #ajax uses GET by def.
 def grade():    # Read results file & return strings
-    resultsFile = '/home/nichols/sw_project/temp/' + userID + '_graded.txt'
-    
-    if os.path.exists(resultsFile): 
-        with open(resultsFile) as my_file:
-            graded = my_file.readlines()
-        transcript = graded[0]
-        phonemes = graded[1]
-        score = graded[2]
+    resultsFile = tempPath + userID + '_graded.txt' # Path for graded.txt
+    try:
+        with open(resultsFile) as my_file:  # Attempt to open the results file
+            graded = my_file.readlines()    # Read lines into an array
+        transcript = graded[0]              # 1st line = Speech-to-Text string
+        score = graded[1]                   # 2nd line = percentage grade
+        speech = transcript.rstrip()        # Must strip newlines/etc. or Phonemizer skips
+        phonemes = Phonemize(speech)        # Use Phonemizer
         return (transcript + '\n' + phonemes + '\n' + score)
-    else:
-        return ('XXX')
+    except:
+        return('###')   # "Error Code" for no file or it's not the proper 2 lines
 
 @app.route('/Clear', methods=['POST']) #ajax uses GET by def.
 def Clear():    # clear /temp/ and /dataset
-    Temp_dir = thisPath + 'temp'
-    clear_Directory(thisPath + 'temp/', userID)
+    clear_Directory(tempPath, userID)
     return("cleared.")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)    #localhost
