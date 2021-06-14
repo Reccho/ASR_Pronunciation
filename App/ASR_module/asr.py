@@ -5,8 +5,18 @@ from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
 from nemo.utils import logging
 
+#Paths and Model names
 datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
+quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
+quartz_phon_Path = '/home/nichols/sw_project/ASR_module/asr_models/quartz_phon/quartz_phon.nemo'
+model_Quartz_base = 'QuartzNet15x5Base-En'  #Model based on words
+model_Quartz_phon = 'quartz_phon'           #...based on phonemes
+
+#Set ASR model to be used:
+model_Selected = model_Quartz_phon
+model_Path = quartz_phon_Path
 mtime = 0.0     # Start modified-time at 0
+
 
 #Phonemize "phrase" to get phonetic representation
 def phonemize(phrase):
@@ -37,36 +47,25 @@ def ASR_Grade(dataset, id):
     parser.add_argument(
         "--asr_model",
         type=str,
-        default="QuartzNet15x5Base-En",     #ASR = Words
-        #default="quartz_phon",    #ASR = Phonemes
+        default=model_Selected,
         required=True,
-        help="Pass: 'QuartzNet15x5Base-En'",    #ASR = Words
-        #help="Pass: 'quartz_phon'",            #ASR = Phonemes
+        help=f'Pass: {model_Selected}',
     )
-    parser.add_argument(
-        "--dataset", type=str, required=True, help="path to evaluation data"
-    )
+    parser.add_argument("--dataset", type=str, required=True, help="path to evaluation data")
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--wer_tolerance", type=float, default=1.0, help="used by test")
     parser.add_argument(
         "--normalize_text",
-        default=True,
+        default=False, # False <- we're using phonetic references
         type=bool,
         help="Normalize transcripts or not. Set to False for non-English.",
     )
-    # args = parser.parse_args(["--dataset", "dataset.json", "--asr_model", "QuartzNet15x5Base-En"])
-    args = parser.parse_args(
-        ["--dataset", dataset, "--asr_model", "QuartzNet15x5Base-En"]   #ASR = Words
-        #["--dataset", dataset, "--asr_model", "quartz_phon"]   #ASR = Phonemes
-    )
+    args = parser.parse_args(["--dataset", dataset, "--asr_model", model_Selected])
     torch.set_grad_enabled(False)
 
-    if args.asr_model.endswith(".nemo"):
-        logging.info(f"Using local ASR model from {args.asr_model}")
-        asr_model = EncDecCTCModel.restore_from(restore_path=args.asr_model)
-    else:
-        logging.info(f"Using NGC cloud ASR model {args.asr_model}")
-        asr_model = EncDecCTCModel.from_pretrained(model_name=args.asr_model)
+    # Instantiate Jasper/QuartzNet models with the EncDecCTCModel class.
+    asr_model = EncDecCTCModel.restore_from(model_Path)
+
     asr_model.setup_test_data(
         test_data_config={
             "sample_rate": 16000,
@@ -100,27 +99,27 @@ def ASR_Grade(dataset, id):
             reference = "".join(
                 [labels_map[c] for c in test_batch[2][batch_ind].cpu().detach().numpy()]
             )
+            print(reference) #DEBUG
             references.append(reference)
         del test_batch
     wer_value = word_error_rate(hypotheses=hypotheses, references=references)
 
-    transcript = '.'
+    REC = '.'
+    REF = '.'
     for h, r in zip(hypotheses, references):
         print("Recognized:\t{}\nReference:\t{}\n".format(h, r))
-        transcript = h
+        REC = h
+        REF = r
     logging.info(f"Got WER of {wer_value}. Tolerance was {args.wer_tolerance}")
-
 
     #Score Calculation, phoneme conversion
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
+    print(score)
 
     #RESULT FILE CREATION
     Results = open(datasetPath + id + '_graded.txt','w')
-    Results.write(transcript + '\n' + str(score))
+    Results.write(REC + '\n' + REF + '\n' + str(score))
     Results.close()
-
-    print(transcript)   #DEBUG
-    print(score)        #DEBUG
     return score
 
 
@@ -128,18 +127,20 @@ def ASR_Grade(dataset, id):
 while True:
     time.sleep(1.0)
     for file in os.listdir(datasetPath):
-        if "dataset.json" in file:
-            newtime = os.path.getmtime(datasetPath + file)
-            if newtime <= mtime:
-                continue
-            else:
-                mtime = newtime
-                print('Detected fresh dataset.json...')
-                try:
-                    arr = file.split('_', 1)
-                    print(arr[0])   #uuid
-                    ASR_Grade(datasetPath + file, arr[0])
-                except:
+        try:
+            if "dataset.json" in file:
+                newtime = os.path.getmtime(datasetPath + file)
+                if newtime <= mtime:
                     continue
-        else:
-            continue
+                else:
+                    mtime = newtime
+                    print('Detected fresh dataset.json...')
+                    try:
+                        arr = file.split('_', 1)
+                        print(arr[0])   #uuid
+                        ASR_Grade(datasetPath + file, arr[0])
+                    except:
+                        continue
+            else:
+                continue
+        except: print("File Error.")
