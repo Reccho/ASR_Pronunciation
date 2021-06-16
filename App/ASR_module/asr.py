@@ -1,10 +1,17 @@
-import os, os.path, sys, time, random, glob, subprocess
+import os, os.path, sys, time, random, glob, subprocess, json
 import torch
 from argparse import ArgumentParser
 from nemo.collections.asr.metrics.wer import WER, word_error_rate
 from nemo.collections.asr.models import EncDecCTCModel
 from nemo.utils import logging
 
+#Phonetic labels used by the ASR model
+LABELS = [" ", "a", "aɪ", "aɪə", "aɪɚ", "aʊ", "b", "d", "dʒ", "eɪ", "f", "h", 
+          "i", "iə", "iː", "j", "k", "l", "m", "n", "n̩", "oʊ", "oː", "oːɹ", 
+          "õ", "p", "r", "s", "t", "tʃ", "uː", "v", "w", "x", "z", "æ", "ç", 
+          "ð", "ŋ", "ɐ", "ɑː", "ɑːɹ", "ɑ̃", "ɔ", "ɔɪ", "ɔː", "ɔːɹ", "ɔ̃", "ɕ", 
+          "ə", "əl", "ɚ", "ɛ", "ɛɹ", "ɜː", "ɡ", "ɡʲ", "ɪ", "ɪɹ", "ɬ", "ɹ", "ɾ", 
+          "ʃ", "ʊ", "ʊɹ", "ʌ", "ʒ", "ʔ", "β", "θ", "ᵻ" ]
 #Paths and Model names
 datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
 quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
@@ -30,8 +37,9 @@ def phonemize(phrase):
     print(key) #DEBUG
     return key
 
+
 #Run the ASR on 'dataset.json', return score
-def ASR_Grade(dataset, id):
+def ASR_Grade(dataset, id, key):
     try:
         from torch.cuda.amp import autocast
     except ImportError:
@@ -96,9 +104,8 @@ def ASR_Grade(dataset, id):
             )
         hypotheses = wer.ctc_decoder_predictions_tensor(greedy_predictions)
         for batch_ind in range(greedy_predictions.shape[0]):
-            reference = "".join(
-                [labels_map[c] for c in test_batch[2][batch_ind].cpu().detach().numpy()]
-            )
+            reference = key
+            #reference = "".join([labels_map[c] for c in test_batch[2][batch_ind].cpu().detach().numpy()])
             print(reference) #DEBUG
             references.append(reference)
         del test_batch
@@ -138,7 +145,12 @@ while True:
                     try:
                         arr = file.split('_', 1)
                         print(arr[0])   #uuid
-                        ASR_Grade(datasetPath + file, arr[0])
+                        
+                        with open(datasetPath + file) as f:
+                            data = json.load(f)
+                        #print(data["text"])    #DEBUG
+
+                        ASR_Grade(datasetPath + file, arr[0], data["text"])
                     except:
                         continue
             else:
