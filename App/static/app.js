@@ -1,16 +1,15 @@
 $(document).ready(function () {
     var PAGE = window.location.href;
-    console.log(PAGE);
-    LocalHost = 'http://localhost:5000'             // '' or http://localhost:5000
-    var timestamp = new Date().getTime();           // create a new timestamp
-    var TS = timestamp.toString();                  // convert timestamp to string
+    console.log(PAGE);                              //debug
+    LocalHost = ''                                  // '' or http://localhost:5000
+    const id = Date.now().toString()                // create "uuid" from timestamp
+    max_val = 1;                                    // default value
     $("#spectrogram").hide();                       // toggle: hide/show
     $('#phraseNumber').val(0);                      // begin number field at 0
     $('#phrase').empty().append("Hello, World.");   // default phrase
-    $("#grade").attr("disabled", true);		        //disable on load
+    $("#grade").attr("disabled", true);		        // disable on load
     $("#playback").attr("disabled", true);          // disable playback on page load
-    max_val = 1;                                    // default value
-    req_getDatasets();
+    req_getDatasets(); // Begin by loading available phrase libraries (populate $Dataset)
 
 
     //Request Functions
@@ -19,18 +18,18 @@ $(document).ready(function () {
             url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
-				action: "getPhrase", 				// Will forward to getPhrase()
+				action: "getPhrase", 	                            // Will forward to getPhrase()
 				idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
-				idPhrase: $('#phraseNumber').val()	// Pass value of "Phrase number"
+				idPhrase: $('#phraseNumber').val()	                // Pass value of "Phrase number"
 			},
 			
 			success: function(data) {
-				$('#phrase').empty().append(data); // Display new phrase to user
-                $('#score').empty(); // Clear old score/"you said" text
-                $('#spectrogram').hide();
-				$("#grade").attr("disabled", true);
-                $("#playback").attr("src", '');
-                console.log(data);
+				$('#phrase').empty().append(data);  // Display new phrase to user
+                $('#score').empty();                // Clear old score/"you said" text
+                $('#spectrogram').hide();           // toggle off
+				$("#grade").attr("disabled", true); // turn button off
+                $("#playback").attr("src", '');     // clear playback 
+                console.log(data);                  //debug
 			},
 		});
     }
@@ -40,7 +39,7 @@ $(document).ready(function () {
             url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
-				action: "numPhrase", 				// Will forward to getPhrase()
+				action: "numPhrase", 				                // Will forward to numPhrase()
                 idDataset: $('#dataset option:selected').text(), 	// Pass value of "Dataset"
 			},
 			
@@ -55,7 +54,7 @@ $(document).ready(function () {
             url: (LocalHost + "/Library"),
 			type: "POST",
 			data: {
-				action: "getDatasets", 				// Will forward to getPhrase()
+				action: "getDatasets", 	// Will forward to getDatasets()
 			},
 			
 			success: function(data) {
@@ -68,8 +67,8 @@ $(document).ready(function () {
                     $('#dataset').append(option);  // Append option to Dataset (select)
                   });
 
-                console.log("Datasets available: ", files);     //TEST
-                console.log(TS);                         //TEST
+                console.log("Datasets available: ", files);     //debug
+                console.log("DateTime-id: " + id);              //debug
 			},
 		});
     }
@@ -79,11 +78,11 @@ $(document).ready(function () {
         $.ajax({ //Get total number of phrases in xml library file
             url: (LocalHost + "/Clear"),
             type: "POST",
-            data: "clear",
+            data: { uuid: id },
             
             success: function(data) {
                 resolve(data);
-                console.log(data);     //TEST
+                console.log(data);      //debug
             },
         });
     }
@@ -92,7 +91,7 @@ $(document).ready(function () {
     function selectPhrase() {
         req_numPhrase();    //Get the total number of phrases in the file
 
-		//Check if phrase # is out of bounds and reset accordingly
+		//Check if phrase # is out of bounds and loop accordingly
         p_num = parseInt($('#phraseNumber').val());
 		if (p_num > max_val) {
             $('#phraseNumber').val(1);
@@ -100,7 +99,7 @@ $(document).ready(function () {
             $('#phraseNumber').val(max_val);
 		}
 
-		req_getPhrase();    // Get the actual text of the phrase selected
+		req_getPhrase(); // Get the actual text of the phrase selected
 	}
 
     function refreshSpectro(){    
@@ -120,33 +119,34 @@ $(document).ready(function () {
         $('#phrase').empty().append("Hello, World.");   // default prompt
         max_val = 1;                                    // default value
         selectPhrase();
-        console.log("New phrase library selected.");    //TEST
+        console.log("New phrase library selected.");    ////debug
     });
 
     
     //"main"
     if (navigator.mediaDevices) {
-        var audio = { audio: true };
-        var chunks = [];
+        var audioConstraint = { audio: true };
         var audioBlob = null;
         var clipName = "";
+        var chunks = [];
 
-        navigator.mediaDevices.getUserMedia(audio).then(function (stream) {
+        navigator.mediaDevices.getUserMedia(audioConstraint).then(function (stream) {
                 var mediaRecorder = new MediaRecorder(stream);	// Init
 
                 // On-Click: "Record"
-                $("#record").click(function () {
+                $("body").on('click', '#record', function () {
+                    console.log("'Record' clicked.");
                     $("#playback").trigger("stop");	// Stop playing preview
                     chunks = [];					// Set chunks empty
                     mediaRecorder.start();			// Start recording
 
                     //Element updates
-                    $("#spectrogram").hide();                 // toggle: hide/show
+                    $("#spectrogram").hide();                   // toggle: hide/show
                     $("#stop").attr("disabled", false);			//enable
                     $("#grade").attr("disabled", true);			//disable
                     $("#record").attr("disabled", true);		//disable
                     $("#playback").attr("disabled", true);      // disable
-                    $('#score').empty(); // Clear old score/"you said" text
+                    $('#score').empty(); // Clear old score/"Recognized: " text
                 });
 
                 // On-Click: "Stop"
@@ -155,10 +155,13 @@ $(document).ready(function () {
                     $.ajax({ //REQUEST: Store the text prompt in 'sample.txt'
                         url: (LocalHost + "/Store_Phrase"),
                         type: "POST",
-                        data: {text: $("#phrase").text() },
+                        data: {
+                            text: $("#phrase").text(), 
+                            uuid: id 
+                        },
                         
                         success: function(data) {
-                            console.log(data);     //TEST
+                            console.log(data);     //debug
                         }
                     });
 
@@ -174,26 +177,26 @@ $(document).ready(function () {
 					$.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
                         url: (LocalHost + "/Grade"),
                         type: "POST",
+                        data: { uuid: id },
 						
 						success: function(data) {
                             if (data != "###") {    // If file is NOT the error value
                                 var grade = data.split('\n');
-                                $('#score').empty().append('You said: \"' + grade[0] + '\"');
+                                $('#score').empty().append('Recognized: \"' + grade[0] + '\"');
                                 $('#score').append('<br />' );
-                                $('#score').append('Phonetic: [' + grade[2] + ']');
+                                $('#score').append('Reference: [' + grade[2] + ']');
                                 $('#score').append('<br />' );
                                 $('#score').append('Correctness: ' + grade[4] + '%');
-                                //console.log(data + "%");     //TEST
-                                console.log(grade);     //TEST
+                                console.log(grade);     //debug
                             } else {
                                 $('#score').empty().append("FILE NOT FOUND");
-                                console.log("File does not exist or has wrong format.");     //TEST
+                                console.log("File does not exist or has wrong format.");     //debug
                             }
 						}
 					});
 				});
 
-                mediaRecorder.onstop = function (e) {
+                mediaRecorder.onstop = function (e) {   //Runs when mediaRecorder finishes
                     clipName = $("#dataset").val() + "_" + $("#phraseNumber").val();
                     audioBlob = new Blob(chunks, { 'type': 'audio/webm; codecs=opus' });
                     chunks = [];
@@ -203,17 +206,26 @@ $(document).ready(function () {
                     if ($("#autoplay").is(":checked"))
                         $("#playback").trigger("play");
                     
+                    let formData = new FormData();                              //create FormData holder
+                    formData.append("uuid", id);                                //append uuid
+                    formData.append("audio", audioBlob, "input_audio.webm");    //append audio Blob
+
+                    console.log("here is the formdata...");     //debug
+                    for (var pair of formData.entries()) {      //debug
+                        console.log(pair[0]+ ', ' + pair[1]);   //debug
+                    }
+
                     $.ajax({ //REQUEST: Pass audio to grading function and get score value (decimal)
                         url: (LocalHost + "/Store_Audio"),
                         type: "POST",
                         contentType: false,
                         processData: false,
-                        data: audioBlob,
-                        
+                        enctype:"multipart/form-data",
+                        data: formData,
+
                         success: function(result) {
                             $('#spectrogram').attr('src', 'data:image/gif;base64,' + result);
                             $("#spectrogram").show();   // toggle: hide/show
-                            //console.log(result);          //TEST
                         }
                     });
                 }
@@ -226,6 +238,7 @@ $(document).ready(function () {
             })
             .catch(function (err) {
                 alert('Error encountered: ' + err);
+                console.log("Unable to access mic, probably...");
             })
     }
 });
