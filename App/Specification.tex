@@ -5,7 +5,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{hyperref}
-\title{Pronunciation Checking with ASR}
+\title{Pronunciation Checking with ASR\\ \small Detailed Specification}
 \author{Evan Nichols}
 \date{MFF 2020/2021}
 
@@ -13,14 +13,14 @@
 \maketitle
 
 \section*{Main Idea}
-The goal of this project is to present the user with a simple application that will allow them to submit recorded speech and receive a score based on their pronunciation. The application will be built using Flask, a web application framework in Python. The main computational part of the app will be using NVIDIA's NeMo toolkit, which provides the neural network module that actually grades the speech input. Structurally, the application consists of a web page run in JavaScript, and a back end in Python, which uses the NN to process speech. 
+The goal of this project is to present the user with a simple application that will allow them to submit recorded speech and receive a score based on their pronunciation. The application will be built using Flask, a web application framework in Python. The main computational part of the app will be using NVIDIA's NeMo toolkit, which provides the neural network module that actually grades the speech input. The application consists of a web page run in JavaScript, and a back end in Python, which uses the NN to process speech. 
 
 \section*{Interface}
 When looking at the webpage the user will see several elements:
 \begin{itemize}
 \item A drop-down list selection of XML library files that hold the speech prompt phrases.
 
-\item A numbered selection which pulls a phrase from the selected XML library. Here, the selected number corresponds to the element id of the phrase in the library.
+\item A numbered selection which pulls a phrase from the selected XML library.
 
 \item \textbf{Record} begins recording audio. The user should read the selected phrase (displayed in the text box above) aloud and press \textbf{Stop} when finished. The audio player to the right allows the user to preview their recorded audio, and the user is able to overwrite the current input by simply recording again. Upon recording, the app also creates a text file which contains the prompt. Once the recording stops, the app prepares the data set which will be used by the ASR module. This involves reformatting the audio via \textit{ffmpeg}, and storing the audio file name, the audio's duration, and the selected phrase in a JSON file, which consists of one line that matches the following format: \\
 \hspace*{19mm} \{"audio\_filename": \textit{"file.wav"}, "duration": \textit{1.00}, "text": \textit{"Text."}\} \\
@@ -111,7 +111,7 @@ The 360-hour "clean" speech dataset from the \href{http://www.openslr.org/12/}{L
 \item{Design webpage using HTML.}
 \item{Implement audio recording and save-to-file.}
 \item{Implement Spectrogram creation w/ Librosa.}
-\item{Get application to be fully functional locally (minus ASR).}
+\item{Get application to be fully functional locally}
 \item{Shift application to UK AIC server.}
 \item{Include ASR in program, check it has GPU access.}
 \item{Sort out permissions so that all functions work from server.}
@@ -128,7 +128,7 @@ A python virtual environment setup was used to keep the project compact and self
 
 The addition of Universally Unique Identifiers (UUIDs) to all the temporary files the application creates was to enable multiple users to use the web page at once without having their files overwriting each other. Multiple instances running at once would result in one \textit{temp} directory with only one of each type of file, possibly created by many different users. To stop this each instance generates an ID and should only access files with that ID prepended to their names. The spectrogram file \textit{spectro.png} should be safer than the other files because the program creates the image file, reads it as bytes, and sends those bytes back to the web page all in sequence, but it is possible that two (or more) users hitting "Stop" simultaneously could still have their images overwritten. Just to be safe  (and consistent) all temporary files have their instance's ID.
 
-\section*{Possible Additions}
+\section*{Future Work}
 \begin{itemize}
 \item{Add a TTS tool that allows the user to here how TTS would pronounce the prompt. This would be useful if the user encounters words with which they are not familiar. This could possibly be done with \textbf{pyttsx3} or \textbf{gTTS API}.}
 
