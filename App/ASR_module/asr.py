@@ -1,4 +1,4 @@
-import os, os.path, sys, time, random, glob, subprocess, json
+import os, os.path, sys, time, subprocess, json
 import torch
 from argparse import ArgumentParser
 from nemo.collections.asr.metrics.wer import WER, word_error_rate
@@ -12,6 +12,7 @@ LABELS = [" ", "a", "aɪ", "aɪə", "aɪɚ", "aʊ", "b", "d", "dʒ", "eɪ", "f",
           "ð", "ŋ", "ɐ", "ɑː", "ɑːɹ", "ɑ̃", "ɔ", "ɔɪ", "ɔː", "ɔːɹ", "ɔ̃", "ɕ", 
           "ə", "əl", "ɚ", "ɛ", "ɛɹ", "ɜː", "ɡ", "ɡʲ", "ɪ", "ɪɹ", "ɬ", "ɹ", "ɾ", 
           "ʃ", "ʊ", "ʊɹ", "ʌ", "ʒ", "ʔ", "β", "θ", "ᵻ" ]
+
 #Paths and Model names
 datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
 quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
@@ -24,18 +25,6 @@ model_Selected = model_Quartz_phon
 model_Path = quartz_phon_Path
 mtime = 0.0     # Start modified-time at 0
 
-
-#Phonemize "phrase" to get phonetic representation
-def phonemize(phrase):
-    cmd = "echo " + phrase + " | phonemize"
-    sub = subprocess.Popen(cmd, 
-        shell=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        universal_newlines=True)
-    key = sub.communicate()[0]
-    print(key) #DEBUG
-    return key
 
 
 #Run the ASR on 'dataset.json', return score
@@ -105,8 +94,8 @@ def ASR_Grade(dataset, id, key):
         hypotheses = wer.ctc_decoder_predictions_tensor(greedy_predictions)
         for batch_ind in range(greedy_predictions.shape[0]):
             reference = key
-            #reference = "".join([labels_map[c] for c in test_batch[2][batch_ind].cpu().detach().numpy()])
-            print(reference) #DEBUG
+            #reference = "".join([labels_map[c] for c in test_batch[2][batch_ind].cpu().detach().numpy()])  #debug
+            print(reference) #debug
             references.append(reference)
         del test_batch
     wer_value = word_error_rate(hypotheses=hypotheses, references=references)
@@ -123,7 +112,7 @@ def ASR_Grade(dataset, id, key):
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
     print(score)
 
-    #RESULT FILE CREATION
+    #Result file creation, to be accessed by JS via 'app.py'
     Results = open(datasetPath + id + '_graded.txt','w')
     Results.write(REC + '\n' + REF + '\n' + str(score))
     Results.close()
@@ -137,18 +126,17 @@ while True:
         try:
             if "dataset.json" in file:
                 newtime = os.path.getmtime(datasetPath + file)
-                if newtime <= mtime:
+                if newtime <= mtime: #file is not fresh
                     continue
                 else:
-                    mtime = newtime
-                    print('Detected fresh dataset.json...')
+                    mtime = newtime #update modified-time checkpoint
+                    print('Detected fresh dataset.json...') #debug
                     try:
-                        arr = file.split('_', 1)
-                        print(arr[0])   #uuid
+                        arr = file.split('_', 1) #debug, get uuid
+                        print(arr[0])   #debug, show uuid in use
                         
                         with open(datasetPath + file) as f:
                             data = json.load(f)
-                        #print(data["text"])    #DEBUG
 
                         ASR_Grade(datasetPath + file, arr[0], data["text"])
                     except:
