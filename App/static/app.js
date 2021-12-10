@@ -189,7 +189,7 @@ $(document).ready(function () {
                                 $('#score').append('Correctness: ' + grade[4] + '%');
                                 console.log(grade);     //debug
                             } else {
-                                $('#score').empty().append("FILE NOT FOUND");
+                                $('#score').empty().append("Your speech is still being graded. Press 'Grade' again in a few ms :)");
                                 console.log("File does not exist or has wrong format.");     //debug
                             }
 						}
