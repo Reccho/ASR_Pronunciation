@@ -7,7 +7,7 @@
 \usepackage{hyperref}
 \title{Pronunciation Checking with ASR\\ \small Detailed Specification}
 \author{Evan Nichols}
-\date{MFF 2020/2021}
+\date{MFF 2021/2022}
 
 \begin{document}
 \maketitle
@@ -128,9 +128,15 @@ A python virtual environment setup was used to keep the project compact and self
 
 The addition of Universally Unique Identifiers (UUIDs) to all the temporary files the application creates was to enable multiple users to use the web page at once without having their files overwriting each other. Multiple instances running at once would result in one \textit{temp} directory with only one of each type of file, possibly created by many different users. To stop this each instance generates an ID and should only access files with that ID prepended to their names. The spectrogram file \textit{spectro.png} should be safer than the other files because the program creates the image file, reads it as bytes, and sends those bytes back to the web page all in sequence, but it is possible that two (or more) users hitting "Stop" simultaneously could still have their images overwritten. Just to be safe  (and consistent) all temporary files have their instance's ID.
 
+\section*{Details on Spectrograms}
+When the user has submitted their speech, the program creates and displays a spectrogram of their input (via \textbf{Spectro()}, page 3). This is a visual representation of the spectrum of frequencies of a signal over time. The x-axis marks time, the y-axis marks frequency, and the color intensity at each point marks the amplitude. In creating spectrograms, the Fast Fourier Transform is often used. The image is broken into many smaller windows and the FFT is applied to each window. The result is complex numbers which represent the amplitudes of frequencies in the window. Spectrograms are frequently useful in speech recognition because they are essential sound represented as an image. This transforms the task into one of image classification, which is a well-studied area with many applicable tools. A simpler representation (which is also producable vie \textbf{Librosa}) is a waveplot, which plots amplitudes over time. These types of representations are especially useful to humans, because they provide a visual aid which shows the kind of data our programs are analyzing.
+
+\newpage%######################################################################
+
+
 \section*{Future Work}
 \begin{itemize}
-\item{Add a TTS tool that allows the user to here how TTS would pronounce the prompt. This would be useful if the user encounters words with which they are not familiar. This could possibly be done with \textbf{pyttsx3} or \textbf{gTTS API}.}
+\item{Add a TTS tool that allows the user to hear how TTS would pronounce the prompt. This would be useful if the user encounters words with which they are not familiar. This could possibly be done with \textbf{pyttsx3} or \textbf{gTTS API}.}
 
 \item{Add phrases in different languages, and the necessary support from the ASR. A small menu could let users switch the UI to other languages. Phrases can be added by simply enlarging the selection of \textit{dataset.xml} files.}
 
