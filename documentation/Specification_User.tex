@@ -16,8 +16,9 @@
 \section*{What Is It?}
 This application allows the user to test their pronunciation of various English sentence prompts. It supports multiple concurrent users. Users record themselves, via the web page, and then wait for their pronunciation to be evaluated. After a short delay, they may pull up their score and review, or try again. It uses a neural network module built for automatic speech recognition to evaluate the speech. The module compares the users' spoken phonemes to those of the text prompt (converted from the text), and compares the differences. The application is built using Flask, a web framework for Python, with a web page run in JavaScript. 
 
-\includegraphics[scale=0.33]{images/homepage.png}
-
+\begin{center}
+    \includegraphics[scale=0.33]{images/homepage.png}
+\end{center}
 
 \newpage%######################################################################
 \section*{How to Use this Appplication}
@@ -37,6 +38,19 @@ The user's speech speech is recorded, the raw data is sent to the back-end and t
 \newpage%######################################################################
 
 \section*{User Interface}
+\begin{itemize}
+    \item \textbf{Dataset} is a drop-down list of the available phrase libraries. Each phrase is an item in an XML file with a single id, which denotes the items position in the file (1, 2, 3, etc.
+    \item \textbf{Phrase number} is a simple selector, selecting up or down pulls the corresponding phrase from the currently selected library. The numbers will loop around the first and last items for seamless selections.
+    \item \textbf{Phrase} is a text box that displays the currently selected phrase. It is this text the user is expected to read out loud. The phrase is sent along with the audio to the ASR module, but before that it is converted to its phonetic representation (phonemes) and stripped of any non-alphabetic characters, eg. '-', or '!'.
+    \item \textbf{Record} is a button that begins recording, assuming the user has given microphone access to the browser when prompted. The user should read the text in \textbf{Phrase} out loud, and hit \textbf{Stop} when they are finished speaking. Hitting \textbf{Record} again (after \textbf{Stop}) will overwrite any previous input, allowing the user to adjust their submission.
+    \item \textbf{Stop} closes the recording and, behind the scenes, sends the audio and prompt to the back-end. It also activates the button \textbf{Grade} and the \textbf{Playback} box, which were deactivated by default upon loading the page.
+    \item \textbf{Playback} allows the user to listen to whatever was recorded, and they may record again if they are not satisfied. 
+    \item \textbf{Grade} pulls the results from '\textit{uuid}\_graded.txt', and displays them to the right. The display will list the recognized phonemes (what the user submitted), the correct phonemes (from the text prompt), and the percentage score marking how well the user pronounced the prompt. Since the ASR module will run in variable time, based on the size of the input data, a slight delay might occur between the user pressing \textbf{Stop} and \textbf{Grade} returning the appropriate results. A simple message will tell the user to try again if their first press was too soon. 
+\end{itemize}
+
+\begin{center}
+    \includegraphics[width=0.75\textwidth, center]{images/homepage.png}
+\end{center}
 
 
 \newpage%######################################################################
