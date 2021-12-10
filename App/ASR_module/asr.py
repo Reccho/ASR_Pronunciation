@@ -98,7 +98,7 @@ def ASR_Grade(dataset, id, key):
             print(reference) #debug
             references.append(reference)
         del test_batch
-    wer_value = word_error_rate(hypotheses=hypotheses, references=references)
+    wer_value = word_error_rate(hypotheses=hypotheses, references=references, cer=True)
 
     REC = '.'
     REF = '.'
@@ -110,6 +110,8 @@ def ASR_Grade(dataset, id, key):
 
     #Score Calculation, phoneme conversion
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
+    if score < 0.0:
+        score = 0.0
     print(score)
 
     #Result file creation, to be accessed by JS via 'app.py'
