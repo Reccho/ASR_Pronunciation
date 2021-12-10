@@ -5,6 +5,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[parfill]{parskip}
 \usepackage{hyperref}
+\usepackage{graphicx}
 \title{Pronunciation Checking with ASR\\ \small Detailed Specification}
 \author{Evan Nichols}
 \date{MFF 2021/2022}
@@ -72,7 +73,7 @@ There are four main request routes which are mapped to:
 \begin{itemize}
 \item{\textbf{/Library}} handles all requests related to accessing the dataset(s) of phrases. Depending on the request parameter, this route will call functions that accesses the datasets in the 'lib' folder, count the phrases in a file, and return specific phrases by ID. 
 
-\item{\textbf{/Store\_Phrase}} is called once recording ends. Here a file 'sample.txt' is created and the currently selected phrase is written to it. This file resides in the folder 'dataset' and it is used later when 'dataset.json' is created, specifically the "TEXT" section.
+\item{\textbf{/Store\_Phrase}} is called once recording ends. Here a file 'sample.txt' is created and the currently selected phrase is written to it. This file resides in the folder 'dataset' and it is used later when '\textit{uuid}_dataset.json' is created, specifically the "TEXT" section.
 
 \item{\textbf{/Store\_Audio}} stores the user's recorded speech input as 'input.wav' (the data is in sent as 'request.data', which is written to 'input.wav'). This new file is then reformatted as 'sample.wav', and the new file name, the audio's duration, and the selected phrase from 'sample.txt' are passed to \textbf{prep\_Dataset()} which creates the JSON file that will be read by the ASR model.
 This function also calls Spectro(), which creates a spectrogram from 'input.wav'. This spectrogram is then encoded and sent back as 'response', which is displayed to the user via HTML.
@@ -88,7 +89,7 @@ This function also calls Spectro(), which creates a spectrogram from 'input.wav'
 
 \item{\textbf{audio\_Reformat()} uses the ffmpeg command to format the audio input correctly for the ASR module. The flag \textbf{-y} forces any existing 'sample.wav' to be overwritten. \\The flags \textbf{-ar 16000} and \textbf{-ac 1} set the sample rate to 16000 Hz and set the audio channel count to 1, respectively.}
 
-\item{\textbf{ASR\_Grade()} takes the 'dataset.json' file and runs it through the ASR module. The first element of the dataset is the filename of the audio ('sample.wav'), the second is that file's duration, and the third is the text key (the selected phrase). The module processes the audio, converts it to text, and compares that with the text key. The output is the calculated Word Error Rate (WER), which is rounded to a percentage and then subtracted from 100. This is so the user is shown (as a percentage) a score that represents their success, not their error.}
+\item{\textbf{ASR\_Grade()} takes the '\textit{uuid}_dataset.json' file and runs it through the ASR module. The first element of the dataset is the filename of the audio ('sample.wav'), the second is that file's duration, and the third is the text key (the selected phrase). The module processes the audio, converts it to text, and compares that with the text key. The output is the calculated Word Error Rate (WER), which is rounded to a percentage and then subtracted from 100. This is so the user is shown (as a percentage) a score that represents their success, not their error.}
 \end{itemize}
 \newpage%######################################################################
 
@@ -100,6 +101,23 @@ The neural network makes use of a GPU for computing, which is accessed via the C
 
 The 360-hour "clean" speech dataset from the \href{http://www.openslr.org/12/}{LibriSpeech ASR corpus} was used to train the ASR model.
 
+
+\section*{Details on Spectrograms}
+When the user has submitted their speech, the program creates and displays a spectrogram of their input (via \textbf{Spectro()}, page 3). This is a visual representation of the spectrum of frequencies of a signal over time. The x-axis marks time, the y-axis marks frequency, and the color intensity at each point marks the amplitude. In creating spectrograms, the Fast Fourier Transform is often used. The image is broken into many smaller windows and the FFT is applied to each window. The result is complex numbers which represent the amplitudes of frequencies in the window. Spectrograms are frequently useful in speech recognition because they are essential sound represented as an image. This transforms the task into one of image classification, which is a well-studied area with many applicable tools. A simpler representation (which is also producable vie \textbf{Librosa}) is a waveplot, which plots amplitudes over time. These types of representations are especially useful to humans, because they provide a visual aid which shows the kind of data our programs are analyzing.
+
+\newpage%######################################################################
+
+
+\section*{Development Details}
+The two main pieces of the program are implemented separately, that is: the \textit{app.py} which powers the webpage and the \textit{asr.py} which reads dataset files and creates "grade" files. These both have their own \textit{requirements.txt} to remain consistent with this separation. 
+
+A python virtual environment setup was used to keep the project compact and self-contained. All packages are installed in this environment and the app files are run while it is active. The environment is created via the command: \textit{python -m venv *directory name*}, and entered using \textit{source *directory name*/env/bin/activate}. All necessary packages can be found in the file \textit{requirements.txt} and these can be easily downloaded using the command \textit{pip install -r requirements.txt} while the virtual environment is active.
+
+The addition of Universally Unique Identifiers (UUIDs) to all the temporary files the application creates was to enable multiple users to use the web page at once without having their files overwriting each other. Multiple instances running at once would result in one \textit{temp} directory with only one of each type of file, possibly created by many different users. To stop this each instance generates an ID and should only access files with that ID prepended to their names. The spectrogram file \textit{spectro.png} should be safer than the other files because the program creates the image file, reads it as bytes, and sends those bytes back to the web page all in sequence, but it is possible that two (or more) users hitting "Stop" simultaneously could still have their images overwritten. Just to be safe  (and consistent) all temporary files have their instance's ID.
+
+\includegraphics[scale=0.6]{images/workflow.png}
+
+\newpage%######################################################################
 \section*{Development Timeline}
 \begin{itemize}
 \item{Learn about ASR models and neural networks.}
@@ -118,21 +136,6 @@ The 360-hour "clean" speech dataset from the \href{http://www.openslr.org/12/}{L
 \item{Add Unique Universally Unique Identifiers (UUIDs) to all temporary files.}
 \item{Test full functionality.}
 \end{itemize}
-\newpage%######################################################################
-
-
-\section*{Development Details}
-The two main pieces of the program are implemented separately, that is: the \textit{app.py} which powers the webpage and the \textit{asr.py} which reads dataset files and creates "grade" files. These both have their own \textit{requirements.txt} to remain consistent with this separation. 
-
-A python virtual environment setup was used to keep the project compact and self-contained. All packages are installed in this environment and the app files are run while it is active. The environment is created via the command: \textit{python -m venv *directory name*}, and entered using \textit{source *directory name*/env/bin/activate}. All necessary packages can be found in the file \textit{requirements.txt} and these can be easily downloaded using the command \textit{pip install -r requirements.txt} while the virtual environment is active.
-
-The addition of Universally Unique Identifiers (UUIDs) to all the temporary files the application creates was to enable multiple users to use the web page at once without having their files overwriting each other. Multiple instances running at once would result in one \textit{temp} directory with only one of each type of file, possibly created by many different users. To stop this each instance generates an ID and should only access files with that ID prepended to their names. The spectrogram file \textit{spectro.png} should be safer than the other files because the program creates the image file, reads it as bytes, and sends those bytes back to the web page all in sequence, but it is possible that two (or more) users hitting "Stop" simultaneously could still have their images overwritten. Just to be safe  (and consistent) all temporary files have their instance's ID.
-
-\section*{Details on Spectrograms}
-When the user has submitted their speech, the program creates and displays a spectrogram of their input (via \textbf{Spectro()}, page 3). This is a visual representation of the spectrum of frequencies of a signal over time. The x-axis marks time, the y-axis marks frequency, and the color intensity at each point marks the amplitude. In creating spectrograms, the Fast Fourier Transform is often used. The image is broken into many smaller windows and the FFT is applied to each window. The result is complex numbers which represent the amplitudes of frequencies in the window. Spectrograms are frequently useful in speech recognition because they are essential sound represented as an image. This transforms the task into one of image classification, which is a well-studied area with many applicable tools. A simpler representation (which is also producable vie \textbf{Librosa}) is a waveplot, which plots amplitudes over time. These types of representations are especially useful to humans, because they provide a visual aid which shows the kind of data our programs are analyzing.
-
-\newpage%######################################################################
-
 
 \section*{Future Work}
 \begin{itemize}
