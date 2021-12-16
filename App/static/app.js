@@ -107,7 +107,10 @@ $(document).ready(function () {
         var timestamp = new Date().getTime();   // create a new timestamp 
         var queryStr = "?t=" + timestamp;    // add to image filename
 
-        img.src = "/home/nichols/sw_project/temp/spectro.png" + queryStr;     // "?t--" is discarded
+        img.src = "/home/nichols/sw_project/temp/spectro.png" + queryStr;     // "?t--" is discarded 
+        //UUID? 
+        //AND ALSO... DO NOT HARDWIRE PATHS IN CODE
+        //THIS CODE SHOULD BE EXECUTEN IN CLIENT'S BROWSER, HENCE THE SHOULD NOT BE FILE PATH WITHIN CLUSTER
         $('#spectrogram').attr('src', "/home/nichols/sw_project/temp/spectro.png" + new Date().getTime());
     }
 

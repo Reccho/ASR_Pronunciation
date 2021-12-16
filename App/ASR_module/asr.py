@@ -14,7 +14,7 @@ LABELS = [" ", "a", "aɪ", "aɪə", "aɪɚ", "aʊ", "b", "d", "dʒ", "eɪ", "f",
           "ʃ", "ʊ", "ʊɹ", "ʌ", "ʒ", "ʔ", "β", "θ", "ᵻ" ]
 
 #Paths and Model names
-datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
+datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json' # AGAIN, NO ABSOLUTH PATHS HARDWIRED TO YOUR CODE
 quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
 quartz_phon_Path = '/home/nichols/sw_project/ASR_module/asr_models/quartz_phon/quartz_phon.nemo'
 model_Quartz_base = 'QuartzNet15x5Base-En'  #Model based on words
@@ -106,10 +106,10 @@ def ASR_Grade(dataset, id, key):
         print("Recognized:\t{}\nReference:\t{}\n".format(h, r))
         REC = h
         REF = r
-    logging.info(f"Got WER of {wer_value}. Tolerance was {args.wer_tolerance}")
+    logging.info(f"Got PER of {wer_value}. Tolerance was {args.wer_tolerance}")
 
     #Score Calculation, phoneme conversion
-    score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
+    score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100) #WHY DO YOU DIVIDE IT BY WER TOLERANCE?
     if score < 0.0:
         score = 0.0
     print(score)

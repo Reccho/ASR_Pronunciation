@@ -13,9 +13,9 @@ if not sys.warnoptions: #Suppress warnings for cleaner output
     warnings.simplefilter("ignore")
 
 #Some oft-used filepaths for easier to read arguments
-thisPath = "/home/nichols/sw_project/"      # Directory w/ this program
-LibPath = "/home/nichols/sw_project/lib/"   # Directory w/ phrase libraries
-tempPath = "/home/nichols/sw_project/temp/" # Directory which holds temp files created by program
+thisPath = "/home/nichols/sw_project/"      #os.getcwd() # DO NOT HARDWIRE ABSOLUTH PATHS TO YOUR PROGRAM
+LibPath = "/home/nichols/sw_project/lib/"   #os.path.join(os.getcwd(), '/lib/') # Directory w/ phrase libraries
+tempPath = "/home/nichols/sw_project/temp/" #os.path.join(os.getcwd(), '/temp/')# Directory which holds temp files created by program
 
 #region XML Library interactions (phrase fetching)
 #Search xml file for phrase by id and return text string
@@ -32,7 +32,7 @@ def phrase_Num(filename):
     return len(root.findall('.//phrase'))   # Find all "phrase" -> return count
 
 #Return .xml files in library directory
-def getDatasets(path, ext):
+def getDatasets(path, ext): #TRY TO FOLLOW ONE NAMING CONVENTION IN THE WHOLE CODE
     #Get list of all files and trim non-.xml documents
     return (f for f in os.listdir(path) if f.endswith('.' + ext))
 

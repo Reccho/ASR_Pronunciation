@@ -1,5 +1,8 @@
 import os, sys, subprocess
 
+# NO
+# use os.path.abspath()
+
 #Run 'pwd -P' on file "filename"
 def pwd_P(filename):
     cmd = "pwd -P " + filename

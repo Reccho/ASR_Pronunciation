@@ -1,5 +1,7 @@
 import os, sys, subprocess
 
+# you can use librosa.get_duration()
+
 #Run 'soxi -D' on file "filename"
 def sox_i(filename):
     cmd = "soxi -D " + filename
