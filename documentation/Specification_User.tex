@@ -14,11 +14,14 @@
 \maketitle
 
 \section*{What Is It?}
-This application allows the user to test their pronunciation of various English sentence prompts. It supports multiple concurrent users. Users record themselves, via the web page, and then wait for their pronunciation to be evaluated. After a short delay, they may pull up their score and review, or try again. It uses a neural network module built for automatic speech recognition to evaluate the speech. The module compares the users' spoken phonemes to those of the (converted) text prompt, and compares the differences. The application is built using Flask, a web framework for Python, with a web page run in JavaScript. 
+This application allows the user to test their pronunciation of various English sentence prompts. It supports multiple concurrent users. Users record themselves, via the web page, and then wait for their pronunciation to be evaluated. The user's speech input is evaluated on the basis of phonemes, which are the smallest units of sound that can distinguish one word from another. After a short delay, they may pull up their score and review, or try again. It uses a neural network module built for automatic speech recognition to evaluate the speech. The module compares the users' spoken phonemes to those of the (converted) text prompt, and reports the differences. The application is built using Flask, a web framework for Python, with a web page run in JavaScript.
 
-\begin{center}
-    \includegraphics[scale=0.33]{images/homepage.png}
-\end{center}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/results.pdf}
+    \caption{Web page after user has input speech and received a score.}
+\end{figure}
+
 
 \newpage%######################################################################
 \section*{How to Use this Appplication}
@@ -31,12 +34,13 @@ The phrases can be any English words and sentences. The prompts do not NEED to b
 The user's speech speech is recorded, the raw data is sent to the back-end and then reformatted to a \textit{.wav} file with a sampling rate of 16000 and 1 audio channel. A \textbf{spectrogram} is also created which displays some information to the user. The spectrogram measures frequency (y-axis) over time (x-axis), and the intensity of the color marks the amplitude of the frequency at that moment.
 
 \begin{figure}[h!]
-  \caption{Spectrogram generated for input speech "hello world"}
-  \includegraphics[scale=0.5]{images/sample_spectrogram.png}
+    \centering
+    \includegraphics[width=1.1\textwidth]{images/spectro.pdf}
+    \caption{Spectrogram for speech "hello world".}
 \end{figure}
 
-\newpage%######################################################################
 
+\newpage%######################################################################
 \section*{User Interface}
 \begin{itemize}
     \item \textbf{Dataset} is a drop-down list of the available phrase libraries. Each phrase is an item in an XML file with a single id, which denotes the items position in the file (1, 2 etc).
@@ -45,11 +49,13 @@ The user's speech speech is recorded, the raw data is sent to the back-end and t
     \item \textbf{Record} is a button that begins recording, assuming the user has given microphone access to the browser when prompted. The user should read the text in \textbf{Phrase} out loud, and hit \textbf{Stop} when they are finished speaking. Hitting \textbf{Record} again (after \textbf{Stop}) will overwrite any previous input, allowing the user to adjust their submission.
     \item \textbf{Stop} closes the recording and, behind the scenes, sends the audio and prompt to the back-end and activates the \textbf{Grade} and \textbf{Playback} elements (deactivated by default).
     \item \textbf{Playback} allows the user to review their recorded speech. 
-    \item \textbf{Grade} pulls the results from '\{UUID\}\_graded.txt', and displays them to the right. The display will list the recognized phonemes (what the user submitted), the correct phonemes (from the text prompt), and the percentage score marking how well the user pronounced the prompt. Since the ASR module will run in variable time, based on the size of the input data, a slight delay might occur between the user pressing \textbf{Stop} and \textbf{Grade} returning the appropriate results. A simple message will tell the user to try again if their first press was too soon. 
+    \item \textbf{Grade} pulls the results from '\{UUID\}\_graded.txt', and displays them to the right. The results include the recognized phonemes (what the user submitted), the correct phonemes (from the prompt), and a percentage score marking grading the user's pronunciation. Since the ASR module requires a variable amount of time to run, based on the size of the input data, a delay might occur between the user pressing \textbf{Stop} and \textbf{Grade} returning the appropriate results, in which case a message communicates this. 
 \end{itemize}
 
-\begin{center}
-    \includegraphics[scale=0.33]{images/homepage.png}
-\end{center}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.55]{images/homepage.pdf}
+    \caption{Application's web page.}
+\end{figure}
 
 \end{document}
