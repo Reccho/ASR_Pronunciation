@@ -1,15 +1,20 @@
-import os, os.path, subprocess, time
+import sys, os.path, librosa, json
 
-def craft(filename, duration, text):
-	contents = "{\"audio_filename\": \"" + filename + "\", \"duration\": " + duration + ", \"text\": \"" + text + "\"}"
-	cmd = "echo " + contents + " >dataset.json"
-	subprocess.Popen(cmd, 
-        shell=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        universal_newlines=True)
-	#key = sub.communicate()[0]
-	return
+def craft_Dataset(arguments):
+    filename = os.path.abspath('../temp/' + arguments[1])
+    duration = librosa.get_duration(filename='../temp/' + arguments[1])
+    text = arguments[2]
 
-# Audio file in cluster: /lnet/aic/personal/nichols/audio/audio/audio.wav
-craft("/lnet/aic/personal/nichols/audio/audio.wav", "4.995000", "Well, this is the text.")
+    contents = json.dumps({
+        "audio_filename": filename,
+        "duration": duration,
+        "text": text
+    })
+
+    with open('dataset.json', 'w') as dataset:
+        dataset.write(contents)
+
+    return contents
+
+
+craft_Dataset(sys.argv)
