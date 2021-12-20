@@ -14,14 +14,12 @@ LABELS = [" ", "a", "aɪ", "aɪə", "aɪɚ", "aʊ", "b", "d", "dʒ", "eɪ", "f",
           "ʃ", "ʊ", "ʊɹ", "ʌ", "ʒ", "ʔ", "β", "θ", "ᵻ" ]
 
 #Paths and Model names
-
-
-#datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
 datasetPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/temp/'
-quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
-quartz_phon_Path = '/home/nichols/sw_project/ASR_module/asr_models/quartz_phon/quartz_phon.nemo'
-#quartz_base_Path = './asr_models/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
-#quartz_phon_Path = './asr_models/quartz_phon/quartz_phone.nemo'
+#quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
+#quartz_phon_Path = '/home/nichols/sw_project/ASR_module/asr_models/quartz_phon/quartz_phon.nemo'
+quartz_base_Path = './asr_models/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
+quartz_phon_Path = './asr_models/quartz_phon/quartz_phone.nemo'
+#The module files are too large to upload to github, but /asr_models/ belongs to this directory and contains the instances of the neural networks.
 
 model_Quartz_base = 'QuartzNet15x5Base-En'  #Model based on words
 model_Quartz_phon = 'quartz_phon'           #...based on phonemes
