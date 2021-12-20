@@ -13,7 +13,6 @@ def craft_Dataset(arguments):
 
     with open('dataset.json', 'w') as dataset:
         dataset.write(contents)
-
     return contents
 
 
