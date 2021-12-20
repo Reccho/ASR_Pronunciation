@@ -107,8 +107,8 @@ $(document).ready(function () {
         var timestamp = new Date().getTime();   // create a new timestamp 
         var queryStr = "?t=" + timestamp;    // add to image filename
 
-        img.src = "/home/nichols/sw_project/temp/spectro.png" + queryStr;     // "?t--" is discarded
-        $('#spectrogram').attr('src', "/home/nichols/sw_project/temp/spectro.png" + new Date().getTime());
+        img.src = "../temp/" + id + "_spectro.png" + queryStr;     // "?t--" is discarded
+        $('#spectrogram').attr('src', "../temp/spectro.png" + new Date().getTime());
     }
 
     //On-Input functions
