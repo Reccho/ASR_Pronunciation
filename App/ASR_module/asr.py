@@ -113,6 +113,10 @@ def ASR_Grade(dataset, id, key):
     logging.info(f"Got PER of {wer_value}. Tolerance was {args.wer_tolerance}")
 
     #Score Calculation, phoneme conversion
+    # divide wer_value by wer_tolerance to get the ratio of correctness (and round it)
+    # then multiply by 100 to get a value above 0
+    # since this give the "% wrong", subtract from 100 to get "% correct"
+    # this gives a positive grade to show return to the user
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
     if score < 0.0:
         score = 0.0
