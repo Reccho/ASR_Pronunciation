@@ -12,27 +12,27 @@ if not sys.warnoptions: #Suppress warnings for cleaner output
     import warnings
     warnings.simplefilter("ignore")
 
-#Some oft-used filepaths for easier to read arguments
-thisPath = "/home/nichols/sw_project/"      # Directory w/ this program
-LibPath = "/home/nichols/sw_project/lib/"   # Directory w/ phrase libraries
-tempPath = "/home/nichols/sw_project/temp/" # Directory which holds temp files created by program
+#Some oft-used filepaths for easier to read arguments                         
+thisPath = os.path.dirname(os.path.realpath(__file__))  # Directory w/ this program
+tempPath = thisPath + '/temp/'  # Directory which holds temp files created by program
+librPath = thisPath + '/lib/'   # Directory w/ phrase libraries
 
 #region XML Library interactions (phrase fetching)
 #Search xml file for phrase by id and return text string
 def phrase_Get(filename, itemNum):
-    tree = ET.parse(LibPath + filename)                                     # Create tree from xml file
+    tree = ET.parse(librPath + filename)                                     # Create tree from xml file
     root = tree.getroot()                                                   # Begin at root of the tree
     text = root.find('.//phrase[@id="{value}"]'.format(value=itemNum)).text # Search for matching id, return text
     return text
 
 #Return total number of phrases in xml file
 def phrase_Num(filename):
-    tree = ET.parse(LibPath + filename)     # Create tree from xml file
+    tree = ET.parse(librPath + filename)     # Create tree from xml file
     root = tree.getroot()                   # Begin at root of the tree
     return len(root.findall('.//phrase'))   # Find all "phrase" -> return count
 
 #Return .xml files in library directory
-def getDatasets(path, ext):
+def datasets_Get(path, ext):
     #Get list of all files and trim non-.xml documents
     return (f for f in os.listdir(path) if f.endswith('.' + ext))
 
@@ -154,8 +154,9 @@ def query():
         phrase = phrase_Get(idD, idP)   # Find phrase (by id) in dataset
         return phrase                   # return string
     elif action == "getDatasets":   # Get available datasets
-        files = getDatasets(LibPath, "xml") # Get list of .xml files in library
+        files = datasets_Get(librPath, "xml") # Get list of .xml files in library
         filesStr = " "                      # Delimiter
+        print(filesStr)
         return (filesStr.join(files))       # Return list of library files
     return ":)" # Default (probably not needed)
 
