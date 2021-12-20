@@ -14,9 +14,15 @@ LABELS = [" ", "a", "aɪ", "aɪə", "aɪɚ", "aʊ", "b", "d", "dʒ", "eɪ", "f",
           "ʃ", "ʊ", "ʊɹ", "ʌ", "ʒ", "ʔ", "β", "θ", "ᵻ" ]
 
 #Paths and Model names
-datasetPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/temp/'  # Path to dir w/ 'uuid_dataset.json'
+
+
+#datasetPath = '/home/nichols/sw_project/temp/'  # Path to dir w/ 'uuid_dataset.json'
+datasetPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/temp/'
 quartz_base_Path ='/home/nichols/.cache/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
-quartz_phon_Path = './asr_models/quartz_phon/quartz_phone.nemo'
+quartz_phon_Path = '/home/nichols/sw_project/ASR_module/asr_models/quartz_phon/quartz_phon.nemo'
+#quartz_base_Path = './asr_models/torch/NeMo/NeMo_1.0.0rc2/QuartzNet15x5Base-En/2b066be39e9294d7100fb176ec817722/QuartzNet15x5Base-En.nemo'
+#quartz_phon_Path = './asr_models/quartz_phon/quartz_phone.nemo'
+
 model_Quartz_base = 'QuartzNet15x5Base-En'  #Model based on words
 model_Quartz_phon = 'quartz_phon'           #...based on phonemes
 
@@ -98,7 +104,7 @@ def ASR_Grade(dataset, id, key):
             print(reference) #debug
             references.append(reference)
         del test_batch
-    wer_value = word_error_rate(hypotheses=hypotheses, references=references, cer=True)
+    wer_value = word_error_rate(hypotheses=hypotheses, references=references) #cer=True
 
     REC = '.'
     REF = '.'
@@ -106,7 +112,7 @@ def ASR_Grade(dataset, id, key):
         print("Recognized:\t{}\nReference:\t{}\n".format(h, r))
         REC = h
         REF = r
-    logging.info(f"Got WER of {wer_value}. Tolerance was {args.wer_tolerance}")
+    logging.info(f"Got PER of {wer_value}. Tolerance was {args.wer_tolerance}")
 
     #Score Calculation, phoneme conversion
     score = 100.00 - (round((wer_value / args.wer_tolerance), 4) * 100)
@@ -119,6 +125,7 @@ def ASR_Grade(dataset, id, key):
     Results.write(REC + '\n' + REF + '\n' + str(score))
     Results.close()
     return score
+
 
 
 #MAIN
